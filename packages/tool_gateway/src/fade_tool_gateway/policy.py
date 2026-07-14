@@ -104,7 +104,9 @@ class ToolPolicy:
             )
         return self.check_read_path(relative_path)
 
-    def check_command(self, argv: list[str], *, network_required: bool = False) -> PolicyCheckResult:
+    def check_command(
+        self, argv: list[str], *, network_required: bool = False
+    ) -> PolicyCheckResult:
         if not argv:
             return PolicyCheckResult(
                 decision=PolicyDecision.DENY,

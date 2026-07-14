@@ -82,7 +82,10 @@ class PatchEngine:
             if current_hash != hunk.base_hash and hunk.base_hash != file_hash(""):
                 raise PatchEngineError(
                     "BASE_HASH_MISMATCH",
-                    f"Base hash mismatch for {hunk.path}: expected {hunk.base_hash}, got {current_hash}",
+                    (
+                        f"Base hash mismatch for {hunk.path}: "
+                        f"expected {hunk.base_hash}, got {current_hash}"
+                    ),
                 )
 
             if hunk.operations:
@@ -120,7 +123,10 @@ class PatchEngine:
     def _check_protected(self, relative_path: str) -> None:
         parts = {part.lower() for part in Path(relative_path).parts}
         if parts & PROTECTED_SEGMENTS:
-            raise PatchEngineError("PROTECTED_PATH", f"Cannot patch protected path: {relative_path}")
+            raise PatchEngineError(
+                "PROTECTED_PATH",
+                f"Cannot patch protected path: {relative_path}",
+            )
 
     def _is_under_git(self, path: Path) -> bool:
         return ".git" in path.parts

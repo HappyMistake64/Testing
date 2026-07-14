@@ -49,7 +49,11 @@ class ModelRouter:
         raise RuntimeError(msg)
 
 
-def create_default_router(*, openai_api_key: str | None = None, include_stub: bool = False) -> ModelRouter:
+def create_default_router(
+    *,
+    openai_api_key: str | None = None,
+    include_stub: bool = False,
+) -> ModelRouter:
     """Create router with Ollama first, OpenAI as fallback, optional stub for tests."""
     router = ModelRouter()
     router.register(OllamaAdapter())
