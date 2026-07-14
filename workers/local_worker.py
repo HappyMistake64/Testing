@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import contextlib
 import signal
 import uuid
 from datetime import UTC, datetime
 
-from fade_domain.ids import JobId
+from fade_agent_runtime.orchestrator import AgentRuntimeOrchestrator
 from fade_domain.job import JobState
 from fade_evidence.ledger import EvidenceLedger
 from fade_infrastructure.database import create_engine, create_session_factory
@@ -18,12 +17,13 @@ from fade_infrastructure.job_queue import SqlAlchemyJobQueue
 from fade_infrastructure.job_repository import SqlAlchemyJobRepository
 from fade_infrastructure.logging import configure_logging, get_logger
 from fade_infrastructure.settings import get_settings
+from fade_model_router.router import create_default_router
 
 logger = get_logger(__name__)
 
 
 class LocalWorker:
-    """Poll queue, claim jobs, send heartbeats, and execute lightweight handlers."""
+    """Poll queue, claim jobs, send heartbeats, and execute via agent runtime."""
 
     def __init__(
         self,
@@ -40,6 +40,19 @@ class LocalWorker:
         configure_logging(settings)
         self._engine = create_engine(settings)
         self._session_factory = create_session_factory(self._engine)
+        self._model_router = create_default_router(
+            openai_api_key=(
+                settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
+            ),
+            ollama_base_url=settings.ollama_base_url,
+            ollama_default_model=settings.ollama_default_model,
+            include_stub=settings.env in {"test", "development"},
+        )
+        self._orchestrator = AgentRuntimeOrchestrator(
+            settings,
+            self._session_factory,
+            self._model_router,
+        )
 
     async def run(self) -> None:
         logger.info("worker_starting", worker_id=self._worker_id)
@@ -64,11 +77,15 @@ class LocalWorker:
                 logger.info("worker_claimed_job", job_id=str(job.id), job_type=job.job_type)
 
                 try:
-                    await self._execute_job(job, queue, repository, evidence)
+                    await self._orchestrator.execute_job(job.id, worker_id=self._worker_id)
                 except Exception as exc:  # noqa: BLE001
                     logger.exception("worker_job_failed", job_id=str(job.id), error=str(exc))
                     failed = await repository.get_by_id(job.id)
-                    if failed:
+                    if failed and failed.state not in {
+                        JobState.COMPLETED,
+                        JobState.FAILED,
+                        JobState.CANCELLED,
+                    }:
                         failed = _with_state(failed, JobState.FAILED)
                         await repository.update(failed)
                         await self._record_event(
@@ -78,41 +95,6 @@ class LocalWorker:
 
         await self._engine.dispose()
         logger.info("worker_stopped", worker_id=self._worker_id)
-
-    async def _execute_job(self, job, queue, repository, evidence) -> None:
-        heartbeat_task = asyncio.create_task(
-            self._heartbeat_loop(job.id, queue)
-        )
-        try:
-            if job.job_type == "noop":
-                await asyncio.sleep(0.1)
-            elif job.job_type == "analyze":
-                await asyncio.sleep(0.2)
-            else:
-                await asyncio.sleep(0.1)
-
-            current = await repository.get_by_id(job.id)
-            if current and current.state == JobState.RUNNING:
-                completed = _with_state(current, JobState.COMPLETED)
-                await repository.update(completed)
-                await self._record_event(
-                    evidence, completed, "JOB_FINISHED", {"worker_id": self._worker_id}
-                )
-        finally:
-            heartbeat_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await heartbeat_task
-
-    async def _heartbeat_loop(self, job_id: JobId, queue: SqlAlchemyJobQueue) -> None:
-        while True:
-            await asyncio.sleep(self._lease_seconds / 2)
-            async with self._session_factory() as session:
-                hb_queue = SqlAlchemyJobQueue(session, SqlAlchemyJobRepository(session))
-                ok = await hb_queue.heartbeat(
-                    job_id, self._worker_id, lease_seconds=self._lease_seconds
-                )
-                if not ok:
-                    break
 
     async def _record_event(self, evidence, job, event_type: str, payload: dict) -> None:
         events = await evidence.list_for_job(job.id)

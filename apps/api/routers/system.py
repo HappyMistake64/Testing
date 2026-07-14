@@ -42,6 +42,7 @@ class DoctorResponse(BaseModel):
     checks: dict[str, Any]
     issues: list[DoctorIssue]
     capabilities: dict[str, bool]
+    model_providers: list[dict[str, Any]] = []
 
 
 @router.get("/health", response_model=HealthResponse)

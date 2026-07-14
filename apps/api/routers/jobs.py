@@ -8,7 +8,8 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated
 
-from apps.api.dependencies import get_job_service
+from apps.api.dependencies import get_agent_runtime, get_job_service
+from fade_agent_runtime.orchestrator import AgentRuntimeOrchestrator
 from fade_application.jobs import CreateJobCommand, JobService
 from fade_domain.ids import JobId, ProjectId
 from fade_domain.types import AutonomyLevel
@@ -182,30 +183,31 @@ class DiffResponse(BaseModel):
 async def job_diff(
     job_id: str,
     service: Annotated[JobService, Depends(get_job_service)],
+    runtime: Annotated[AgentRuntimeOrchestrator, Depends(get_agent_runtime)],
 ) -> DiffResponse:
     job = await service.get_job(JobId.from_string(job_id))
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    plan_id = job.payload.get("plan_id", "")
+
+    diff_data = await runtime.get_job_diff(JobId.from_string(job_id))
+    if diff_data is None:
+        raise HTTPException(status_code=404, detail="Workspace diff not available")
+
     return DiffResponse(
-        job_id=job_id,
-        base_revision="a" * 40,
+        job_id=diff_data["job_id"],
+        base_revision=str(diff_data["base_revision"]),
         files=[
             DiffFileResponse(
-                path="src/pilot_app/main.py",
-                status="modified",
-                additions=3,
-                deletions=1,
-                patch=(
-                    "@@ -1,3 +1,5 @@\n"
-                    " def greet(name: str) -> str:\n"
-                    "-    return f\"Hello, {name}!\"\n"
-                    "+    return f\"Hello, {name}! Welcome to FADE.\"\n"
-                ),
+                path=file["path"],
+                status=file["status"],
+                additions=file["additions"],
+                deletions=file["deletions"],
+                patch=file["patch"],
             )
+            for file in diff_data["files"]
         ],
-        review_status="pending",
-        findings=[{"plan_id": plan_id}] if plan_id else [],
+        review_status=str(diff_data["review_status"]),
+        findings=list(diff_data["findings"]),
     )
 
 

@@ -52,11 +52,13 @@ class ModelRouter:
 def create_default_router(
     *,
     openai_api_key: str | None = None,
+    ollama_base_url: str = "http://127.0.0.1:11434",
+    ollama_default_model: str = "llama3.2",
     include_stub: bool = False,
 ) -> ModelRouter:
     """Create router with Ollama first, OpenAI as fallback, optional stub for tests."""
     router = ModelRouter()
-    router.register(OllamaAdapter())
+    router.register(OllamaAdapter(base_url=ollama_base_url, default_model=ollama_default_model))
     router.register(OpenAIAdapter(api_key=openai_api_key))
     if include_stub:
         router.register(StubModelAdapter())

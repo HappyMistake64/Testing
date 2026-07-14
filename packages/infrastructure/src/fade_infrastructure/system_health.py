@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fade_application.ports import DatabaseHealth, SystemHealthPort, SystemHealthSnapshot
+from fade_model_router.router import create_default_router
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from fade_infrastructure.database import check_database_health
@@ -38,12 +39,12 @@ class SystemHealthService(SystemHealthPort):
         capabilities = {
             "project_registry": True,
             "project_analysis": True,
-            "agent_runtime": False,
-            "tool_gateway": False,
+            "agent_runtime": True,
+            "tool_gateway": True,
             "model_router": True,
             "evidence_ledger": True,
             "job_queue": True,
-            "workspace_isolation": False,
+            "workspace_isolation": True,
         }
 
         return SystemHealthSnapshot(
@@ -97,6 +98,34 @@ class SystemHealthService(SystemHealthPort):
                 "message": f"Runtime directory {db_path.parent} does not exist",
             })
 
+        router = create_default_router(
+            openai_api_key=(
+                self._settings.openai_api_key.get_secret_value()
+                if self._settings.openai_api_key
+                else None
+            ),
+            ollama_base_url=self._settings.ollama_base_url,
+            ollama_default_model=self._settings.ollama_default_model,
+            include_stub=self._settings.env in {"test", "development"},
+        )
+        model_providers = [
+            {
+                "provider_id": capability.provider_id,
+                "model_id": capability.model_id,
+                "available": capability.available,
+                "reason": capability.reason,
+            }
+            for capability in await router.list_capabilities()
+        ]
+        checks["model_providers"] = model_providers
+
+        if not any(provider["available"] for provider in model_providers):
+            issues.append({
+                "severity": "warning",
+                "code": "MODEL_PROVIDER_UNAVAILABLE",
+                "message": "No model providers are currently available",
+            })
+
         blocking = any(i["severity"] == "error" for i in issues)
 
         return {
@@ -109,10 +138,12 @@ class SystemHealthService(SystemHealthPort):
             "capabilities": {
                 "project_registry": True,
                 "project_analysis": True,
-                "agent_runtime": False,
-                "tool_gateway": False,
+                "agent_runtime": True,
+                "tool_gateway": True,
                 "model_router": True,
                 "evidence_ledger": True,
                 "job_queue": True,
+                "workspace_isolation": True,
             },
+            "model_providers": model_providers,
         }

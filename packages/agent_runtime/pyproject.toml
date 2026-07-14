@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fade-agent-runtime"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fade-domain",
+    "fade-application",
+    "fade-infrastructure",
+    "fade-evidence",
+    "fade-model-router",
+    "fade-patch-engine",
+    "fade-repair-loop",
+    "fade-tool-gateway",
+    "fade-verification",
+    "pydantic>=2.10.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fade_agent_runtime"]
+
+[tool.uv.sources]
+fade-domain = { workspace = true }
+fade-application = { workspace = true }
+fade-infrastructure = { workspace = true }
+fade-evidence = { workspace = true }
+fade-model-router = { workspace = true }
+fade-patch-engine = { workspace = true }
+fade-repair-loop = { workspace = true }
+fade-tool-gateway = { workspace = true }
+fade-verification = { workspace = true }

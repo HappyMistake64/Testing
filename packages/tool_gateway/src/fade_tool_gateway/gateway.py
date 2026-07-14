@@ -94,13 +94,27 @@ class ToolGateway:
         *,
         timeout_s: int = 120,
         network_required: bool = False,
+        env: dict[str, str] | None = None,
     ) -> CommandResult:
         check = self._policy.check_command(argv, network_required=network_required)
         self._enforce(check)
+        merged_env = None
+        if env:
+            import os
+
+            merged_env = {**os.environ, **env}
+            for key in (
+                "PYTEST_CURRENT_TEST",
+                "PYTEST_VERSION",
+                "PYTEST_PLUGINS",
+                "PYTEST_ADDOPTS",
+            ):
+                merged_env.pop(key, None)
         result = run_command(
             argv,
             cwd=str(self._root),
             timeout_s=timeout_s,
+            env=merged_env,
         )
         return CommandResult(
             argv=result.argv,

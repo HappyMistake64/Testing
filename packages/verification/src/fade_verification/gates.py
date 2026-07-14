@@ -97,7 +97,11 @@ class VerificationGate:
 
     def _run_check(self, check: VerificationCheck) -> CheckExecution:
         try:
-            result = self._gateway.safe_run_command(check.argv, timeout_s=check.timeout_s)
+            result = self._gateway.safe_run_command(
+                check.argv,
+                timeout_s=check.timeout_s,
+                env=check.env,
+            )
         except ToolGatewayError as exc:
             return CheckExecution(
                 check=check,
@@ -109,7 +113,7 @@ class VerificationGate:
             )
 
         parsed: CheckResult | None = None
-        if check.name == "pytest" or "pytest" in check.argv[0]:
+        if check.name.startswith("test") or "pytest" in check.argv:
             parsed = parse_pytest_output(result.stdout + result.stderr)
         elif "ruff" in check.argv[0]:
             parsed = parse_ruff_output(result.stdout + result.stderr)

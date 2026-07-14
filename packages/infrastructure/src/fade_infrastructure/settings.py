@@ -70,6 +70,14 @@ class Settings(BaseSettings):
 
     # Placeholder for future secret store integration
     openai_api_key: SecretStr | None = Field(default=None, description="Optional cloud API key")
+    ollama_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        description="Ollama HTTP API base URL",
+    )
+    ollama_default_model: str = Field(
+        default="llama3.2",
+        description="Default Ollama model id",
+    )
 
     @property
     def var_dir(self) -> Path:

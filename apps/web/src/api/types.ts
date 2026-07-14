@@ -55,6 +55,12 @@ export interface DoctorResponse {
   issues: DoctorIssue[];
   capabilities: Record<string, boolean>;
   resource_budgets?: Record<string, number>;
+  model_providers?: Array<{
+    provider_id: string;
+    model_id: string;
+    available: boolean;
+    reason?: string | null;
+  }>;
 }
 
 export interface PreflightIssue {

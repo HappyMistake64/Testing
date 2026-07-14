@@ -9,6 +9,7 @@ import pytest
 import pytest_asyncio
 from apps.api.dependencies import AppState
 from apps.api.main import create_app
+from fade_domain.ids import JobId
 from fade_infrastructure.database import Base
 from fade_infrastructure.logging import configure_logging
 from fade_infrastructure.models import (  # noqa: F401
@@ -30,7 +31,7 @@ from tests.fixtures.pilot_repo import materialize_pilot_repo
 
 
 @pytest_asyncio.fixture
-async def e2e_client(tmp_path) -> AsyncGenerator[tuple[AsyncClient, str], None]:
+async def e2e_client(tmp_path) -> AsyncGenerator[tuple[AsyncClient, str, AppState], None]:
     db_file = tmp_path / "e2e.db"
     db_url = f"sqlite+aiosqlite:///{db_file}"
     os.environ["FADE_DATABASE_URL"] = db_url
@@ -50,10 +51,11 @@ async def e2e_client(tmp_path) -> AsyncGenerator[tuple[AsyncClient, str], None]:
     settings = get_settings()
     configure_logging(settings)
     application.state.fade = AppState(settings)
+    app_state = application.state.fade
 
     transport = ASGITransport(app=application)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac, str(tmp_path)
+        yield ac, str(tmp_path), app_state
 
     await application.state.fade.shutdown()
     get_settings.cache_clear()
@@ -62,7 +64,7 @@ async def e2e_client(tmp_path) -> AsyncGenerator[tuple[AsyncClient, str], None]:
 class TestPilotFlow:
     @pytest.mark.asyncio
     async def test_full_pilot_flow(self, e2e_client) -> None:
-        ac, root = e2e_client
+        ac, root, app_state = e2e_client
         repo_path = materialize_pilot_repo(os.path.join(root, "pilot-small"))
 
         reg = await ac.post(
@@ -113,9 +115,17 @@ class TestPilotFlow:
         assert job_resp.status_code == 201
         job_id = job_resp.json()["id"]
 
+        completed = await app_state.agent_runtime.execute_job(JobId.from_string(job_id))
+        assert completed.state.value == "completed"
+
+        job = await ac.get(f"/api/v1/jobs/{job_id}")
+        assert job.status_code == 200
+        assert job.json()["state"] == "completed"
+
         diff = await ac.get(f"/api/v1/jobs/{job_id}/diff")
         assert diff.status_code == 200
         assert len(diff.json()["files"]) > 0
+        assert any("Welcome to FADE" in file["patch"] for file in diff.json()["files"])
 
         policies = await ac.get("/api/v1/policies")
         assert policies.status_code == 200

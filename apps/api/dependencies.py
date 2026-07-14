@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
+from fade_agent_runtime.orchestrator import AgentRuntimeOrchestrator
 from fade_application.analysis import AnalysisService
 from fade_application.jobs import JobService
 from fade_application.patches import PatchService
@@ -50,9 +51,17 @@ class AppState:
             openai_api_key=(
                 settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
             ),
+            ollama_base_url=settings.ollama_base_url,
+            ollama_default_model=settings.ollama_default_model,
             include_stub=settings.env in {"test", "development"},
         )
         self.plan_service = PlanService(self.model_router)
+        self.agent_runtime = AgentRuntimeOrchestrator(
+            settings,
+            self.session_factory,
+            self.model_router,
+            repair_loop=self.repair_loop,
+        )
 
     def project_service(self, session: AsyncSession) -> ProjectService:
         return ProjectService(
@@ -112,6 +121,12 @@ class AppState:
 
 def get_app_state(request: Request) -> AppState:
     return request.app.state.fade  # type: ignore[attr-defined]
+
+
+def get_agent_runtime(
+    state: Annotated[AppState, Depends(get_app_state)],
+) -> AgentRuntimeOrchestrator:
+    return state.agent_runtime
 
 
 async def get_db_session(

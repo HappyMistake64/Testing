@@ -42,6 +42,7 @@ DEFAULT_COMMAND_ALLOWLIST: dict[str, frozenset[str]] = {
     "uv": frozenset({"run", "sync"}),
     "ruff": frozenset({"check", "format"}),
     "python": frozenset({"-m", "-c"}),
+    "python3": frozenset({"-m", "-c"}),
     "npm": frozenset({"test", "run", "ci"}),
     "node": frozenset(),
 }
