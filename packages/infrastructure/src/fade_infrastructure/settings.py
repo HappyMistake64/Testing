@@ -36,12 +36,28 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", description="Logging level")
     log_format: str = Field(default="json", description="Log format: json or console")
 
+    project_allowed_roots: str = Field(
+        default="",
+        description="Comma-separated allowed roots for project sources (empty = permissive)",
+    )
+    preflight_max_files: int = Field(default=50_000, description="Max files in preflight scan")
+    preflight_max_bytes: int = Field(
+        default=2_000_000_000,
+        description="Max total bytes in preflight scan",
+    )
+
     # Placeholder for future secret store integration
     openai_api_key: SecretStr | None = Field(default=None, description="Optional cloud API key")
 
     @property
     def var_dir(self) -> Path:
         return Path("var")
+
+    @property
+    def allowed_project_roots(self) -> list[str]:
+        if not self.project_allowed_roots.strip():
+            return []
+        return [r.strip() for r in self.project_allowed_roots.split(",") if r.strip()]
 
     @property
     def db_path(self) -> Path:

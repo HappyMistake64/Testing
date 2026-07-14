@@ -83,12 +83,13 @@ workers/        Lokální durable worker (M3+)
 
 **Milestone 0 — Foundation and Architecture Lock** ✅
 
-- Repository struktura a toolchain (uv + pnpm)
-- Domain typy: ProjectId, JobId, RiskLevel, AutonomyLevel, ErrorCode
-- FastAPI s health/doctor, correlation ID, error envelope
-- React System Status stránka
-- SQLite WAL + Alembic + projects tabulka
-- Testy: unit, integration, architecture boundary, frontend component
+**Milestone 1 — Project Registry and Preflight** ✅
+
+- Project CRUD API s idempotentní registrací
+- Path safety (allowed roots, symlink containment)
+- Preflight pipeline (inventory, Git metadata, manifests, sensitive scan)
+- Portfolio dashboard, Add Project wizard, Project detail
+- 33 backend testů, security fixtures
 
 ## Licence
 

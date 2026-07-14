@@ -84,29 +84,29 @@ A task is complete only after its acceptance tests and evidence are present.
 # Milestone 1 - Project Registry and Preflight
 
 ## M1-E1 Project CRUD
-- [ ] Project domain entity and repository port.
-- [ ] SQLAlchemy repository.
-- [ ] List, get, register, patch metadata, archive API.
-- [ ] Idempotent registration behavior.
+- [x] Project domain entity and repository port.
+- [x] SQLAlchemy repository.
+- [x] List, get, register, patch metadata, archive API.
+- [x] Idempotent registration behavior.
 
 ## M1-E2 Source and path safety
-- [ ] Allowed roots configuration.
-- [ ] Canonical path and symlink containment.
-- [ ] Local Git source validation.
-- [ ] Non-Git detection and explicit handling.
+- [x] Allowed roots configuration.
+- [x] Canonical path and symlink containment.
+- [x] Local Git source validation.
+- [x] Non-Git detection and explicit handling.
 
 ## M1-E3 Preflight pipeline
-- [ ] File count/size inventory.
-- [ ] Git revision/dirty/default branch.
-- [ ] Manifest detection.
-- [ ] Protected/sensitive file name scan without reading values.
-- [ ] Preflight status and errors.
+- [x] File count/size inventory.
+- [x] Git revision/dirty/default branch.
+- [x] Manifest detection.
+- [x] Protected/sensitive file name scan without reading values.
+- [x] Preflight status and errors.
 
 ## M1-E4 Add Project Wizard and portfolio
-- [ ] Register form.
-- [ ] Preflight progress.
-- [ ] Detected project summary.
-- [ ] Project cards, status and archive.
+- [x] Register form.
+- [x] Preflight progress.
+- [x] Detected project summary.
+- [x] Project cards, status and archive.
 
 **Milestone 1 exit gate**
 - Valid local Git project reaches READY/PREFLIGHT-complete.

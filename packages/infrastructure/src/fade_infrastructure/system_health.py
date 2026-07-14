@@ -36,7 +36,7 @@ class SystemHealthService(SystemHealthPort):
         status = "healthy" if all_ok else "degraded"
 
         capabilities = {
-            "project_registry": False,
+            "project_registry": True,
             "project_analysis": False,
             "agent_runtime": False,
             "tool_gateway": False,
@@ -107,7 +107,7 @@ class SystemHealthService(SystemHealthPort):
             "checks": checks,
             "issues": issues,
             "capabilities": {
-                "project_registry": False,
+                "project_registry": True,
                 "project_analysis": False,
                 "agent_runtime": False,
                 "tool_gateway": False,

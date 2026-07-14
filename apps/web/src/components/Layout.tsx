@@ -10,6 +10,12 @@ export function Layout() {
         </div>
         <nav>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+            Portfolio
+          </NavLink>
+          <NavLink to="/projects/new" className={({ isActive }) => (isActive ? "active" : "")}>
+            Add Project
+          </NavLink>
+          <NavLink to="/system" className={({ isActive }) => (isActive ? "active" : "")}>
             System Status
           </NavLink>
         </nav>

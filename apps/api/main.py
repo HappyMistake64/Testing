@@ -12,7 +12,7 @@ from apps.api.errors import (
     validation_exception_handler,
 )
 from apps.api.middleware import CorrelationIdMiddleware
-from apps.api.routers import system
+from apps.api.routers import projects, system
 from fade_infrastructure.logging import configure_logging, get_logger
 from fade_infrastructure.settings import get_settings
 from fastapi import FastAPI
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
 
     app.include_router(system.router, prefix="/api/v1")
+    app.include_router(projects.router, prefix="/api/v1")
 
     return app
 
