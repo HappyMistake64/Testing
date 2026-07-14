@@ -7,7 +7,7 @@ from typing import Annotated
 from apps.api.dependencies import get_patch_service
 from fade_application.patches import PatchService
 from fade_domain.ids import WorkspaceId
-from fade_patch_engine.patch import PatchEngineError, PatchHunk, FileOperation, file_hash
+from fade_patch_engine.patch import FileOperation, PatchEngineError, PatchHunk, file_hash
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 

@@ -5,7 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from fade_tool_gateway.gateway import ToolGateway, ToolGatewayError
-from fade_verification.result_parsers import CheckResult, CheckStatus, parse_pytest_output, parse_ruff_output
+
+from fade_verification.result_parsers import (
+    CheckResult,
+    CheckStatus,
+    parse_pytest_output,
+    parse_ruff_output,
+)
 from fade_verification.verification_matrix import (
     VerificationCheck,
     VerificationMatrix,

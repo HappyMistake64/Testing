@@ -6,13 +6,13 @@ from datetime import datetime
 from typing import Annotated
 
 from apps.api.dependencies import get_goal_service, get_job_service, get_plan_service
+from apps.api.routers.jobs import JobResponse, _to_job_response
 from fade_application.jobs import CreateJobCommand, JobService
 from fade_application.planning import GoalApplicationService, PlanApplicationService
 from fade_domain.ids import GoalId, PlanId
 from fade_domain.types import AutonomyLevel
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from apps.api.routers.jobs import JobResponse, _to_job_response
 
 router = APIRouter(prefix="/plans", tags=["plans"])
 

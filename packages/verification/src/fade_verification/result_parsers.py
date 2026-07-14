@@ -29,11 +29,6 @@ class CheckResult:
 
 def parse_pytest_output(output: str) -> CheckResult:
     passed = failed = skipped = errors = 0
-    summary = re.search(
-        r"(\d+) passed|(\d+) failed|(\d+) skipped|(\d+) error",
-        output,
-        re.IGNORECASE,
-    )
     for match in re.finditer(r"(\d+) passed", output):
         passed = int(match.group(1))
     for match in re.finditer(r"(\d+) failed", output):

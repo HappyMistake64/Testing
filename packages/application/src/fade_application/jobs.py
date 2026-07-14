@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from fade_application.ports import EvidencePort, JobRepositoryPort
 from fade_domain.evidence import EvidenceEvent
 from fade_domain.ids import JobId, ProjectId, WorkspaceId
 from fade_domain.job import Job, JobState, can_transition
@@ -17,6 +16,8 @@ from fade_repair_loop.repair_loop import RepairLoop, RepairLoopConfig
 from fade_tool_gateway.gateway import ToolGateway
 from fade_verification.gates import VerificationGate
 from fade_verification.verification_matrix import VerificationMatrix, VerificationResult
+
+from fade_application.ports import EvidencePort, JobRepositoryPort
 
 
 @dataclass(frozen=True, slots=True)

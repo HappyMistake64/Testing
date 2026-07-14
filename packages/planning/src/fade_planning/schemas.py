@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
-
 from fade_domain.types import RiskLevel
+from pydantic import BaseModel, Field
 
 
 class PlanStepSchema(BaseModel):

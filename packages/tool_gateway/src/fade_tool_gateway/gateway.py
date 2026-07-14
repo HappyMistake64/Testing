@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from fade_tool_gateway.policy import PolicyDecision, PolicyCheckResult, ToolPolicy
+from fade_tool_gateway.policy import PolicyCheckResult, PolicyDecision, ToolPolicy
 from fade_tool_gateway.runner import CommandResult, run_command
 
 

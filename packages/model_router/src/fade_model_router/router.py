@@ -5,6 +5,7 @@ from __future__ import annotations
 from fade_model_router.ollama_adapter import OllamaAdapter
 from fade_model_router.openai_adapter import OpenAIAdapter
 from fade_model_router.provider import ModelCapability, ModelCompletion, ModelProviderPort
+from fade_model_router.stub_adapter import StubModelAdapter
 
 
 class ModelRouter:
@@ -48,9 +49,11 @@ class ModelRouter:
         raise RuntimeError(msg)
 
 
-def create_default_router(*, openai_api_key: str | None = None) -> ModelRouter:
-    """Create router with Ollama first, OpenAI as fallback."""
+def create_default_router(*, openai_api_key: str | None = None, include_stub: bool = False) -> ModelRouter:
+    """Create router with Ollama first, OpenAI as fallback, optional stub for tests."""
     router = ModelRouter()
     router.register(OllamaAdapter())
     router.register(OpenAIAdapter(api_key=openai_api_key))
+    if include_stub:
+        router.register(StubModelAdapter())
     return router

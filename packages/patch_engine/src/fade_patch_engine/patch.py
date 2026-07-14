@@ -159,9 +159,7 @@ def _hunk_from_lines(
 ) -> PatchHunk:
     new_lines: list[str] = []
     for line in diff_lines:
-        if line.startswith("+"):
-            new_lines.append(line[1:])
-        elif line.startswith(" "):
+        if line.startswith("+") or line.startswith(" "):
             new_lines.append(line[1:])
     new_content = "\n".join(new_lines)
     if new_content and not new_content.endswith("\n"):

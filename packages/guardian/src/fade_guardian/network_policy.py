@@ -55,14 +55,15 @@ class NetworkPolicy:
                 reason="Git network operations denied by default",
             )
 
-        if binary in {"npm", "pnpm", "pip", "uv"} and any(
-            arg in {"install", "add", "sync", "publish"} for arg in argv[1:]
+        if (
+            binary in {"npm", "pnpm", "pip", "uv"}
+            and any(arg in {"install", "add", "sync", "publish"} for arg in argv[1:])
+            and not self._allowed_hosts
         ):
-            if not self._allowed_hosts:
-                return NetworkPolicyResult(
-                    decision=NetworkPolicyDecision.DENY,
-                    reason="Package install network denied without allowlist",
-                )
+            return NetworkPolicyResult(
+                decision=NetworkPolicyDecision.DENY,
+                reason="Package install network denied without allowlist",
+            )
 
         for arg in argv[1:]:
             if arg.startswith("http://") or arg.startswith("https://"):

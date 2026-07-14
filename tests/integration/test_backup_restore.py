@@ -10,8 +10,6 @@ import tarfile
 from pathlib import Path
 
 import pytest
-from alembic import command
-from alembic.config import Config
 
 
 @pytest.fixture
@@ -58,7 +56,9 @@ class TestBackupRestore:
 
     def test_backup_script_creates_archive(self, tmp_path: Path) -> None:
         root = tmp_path / "platform"
-        shutil.copytree(Path(__file__).resolve().parents[2], root, ignore=shutil.ignore_patterns(".git", "node_modules", "var", "backups"))
+        src = Path(__file__).resolve().parents[2]
+        ignore = shutil.ignore_patterns(".git", "node_modules", "var", "backups")
+        shutil.copytree(src, root, ignore=ignore)
         var_dir = root / "var"
         var_dir.mkdir()
         (var_dir / "fade.db").write_bytes(b"")

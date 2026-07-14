@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fade_domain.ids import PolicyId, ProjectId
+from fade_domain.ids import ProjectId
 from fade_domain.policy import PolicyRule
 from fade_domain.types import AutonomyLevel
 from fade_guardian.policy_resolver import PolicyResolver

@@ -12,7 +12,6 @@ from fade_domain.policy import (
 )
 from fade_domain.types import AutonomyLevel
 
-
 DEFAULT_PROTECTED_PATHS = [
     ".env",
     ".ssh",
@@ -97,7 +96,10 @@ class PolicyResolver:
 
         binary = argv[0].split("/")[-1]
         if binary not in effective.allowed_commands:
-            return PolicyEffect.DENY, f"Command {binary} not allowed at autonomy {effective.autonomy_level}"
+            return (
+                PolicyEffect.DENY,
+                f"Command {binary} not allowed at autonomy {effective.autonomy_level}",
+            )
 
         for rule in effective.rules:
             if rule.rule_type != PolicyRuleType.COMMAND:
@@ -120,13 +122,9 @@ class PolicyResolver:
         for rule in self._rules:
             if not rule.enabled:
                 continue
-            if rule.scope_type == PolicyScope.GLOBAL:
-                result.append(rule)
-            elif rule.scope_type == PolicyScope.PROJECT and project_id and rule.scope_id == str(
+            if rule.scope_type == PolicyScope.GLOBAL or rule.scope_type == PolicyScope.PROJECT and project_id and rule.scope_id == str(
                 project_id
-            ):
-                result.append(rule)
-            elif rule.scope_type == PolicyScope.WORKSPACE and workspace_id and rule.scope_id == workspace_id:
+            ) or rule.scope_type == PolicyScope.WORKSPACE and workspace_id and rule.scope_id == workspace_id:
                 result.append(rule)
         return result
 

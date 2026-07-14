@@ -25,7 +25,8 @@ class TestUpgrade:
     def test_fresh_db_upgrades_to_head(self, alembic_cfg: Config) -> None:
         command.upgrade(alembic_cfg, "head")
         url = alembic_cfg.get_main_option("sqlalchemy.url")
-        engine = create_engine(url)
+        sync_url = url.replace("sqlite+aiosqlite:", "sqlite:")
+        engine = create_engine(sync_url)
         inspector = inspect(engine)
         tables = set(inspector.get_table_names())
         assert "projects" in tables
@@ -44,7 +45,8 @@ class TestUpgrade:
         command.upgrade(alembic_cfg, "head")
         command.upgrade(alembic_cfg, "head")
         url = alembic_cfg.get_main_option("sqlalchemy.url")
-        engine = create_engine(url)
+        sync_url = url.replace("sqlite+aiosqlite:", "sqlite:")
+        engine = create_engine(sync_url)
         with engine.connect() as conn:
             integrity = conn.execute(text("PRAGMA integrity_check")).scalar()
         assert integrity == "ok"

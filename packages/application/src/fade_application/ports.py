@@ -9,8 +9,8 @@ from pathlib import Path
 
 from fade_domain.evidence import EvidenceEvent
 from fade_domain.goal import Goal
-from fade_domain.ids import GoalId, JobId, PlanId, ProfileId, ProjectId
-from fade_domain.job import Job, JobState
+from fade_domain.ids import GoalId, JobId, PlanId, ProjectId
+from fade_domain.job import Job
 from fade_domain.plan import Plan, PlanStatus
 from fade_domain.project import PreflightReport, Project, ProjectStatus
 from fade_domain.project_profile import ProjectProfile, SymbolEntry

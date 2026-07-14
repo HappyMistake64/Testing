@@ -104,9 +104,10 @@ class ProjectProfileResponse(BaseModel):
     created_at: datetime
 
 
-class SymbolListResponse(BaseModel):
-    items: list[SymbolDetailResponse]
-    total: int
+class SymbolResponse(BaseModel):
+    name: str
+    kind: str
+    line: int
 
 
 class SymbolDetailResponse(BaseModel):
@@ -118,10 +119,9 @@ class SymbolDetailResponse(BaseModel):
     content_hash: str | None = None
 
 
-class SymbolResponse(BaseModel):
-    name: str
-    kind: str
-    line: int
+class SymbolListResponse(BaseModel):
+    items: list[SymbolDetailResponse]
+    total: int
 
 
 class ExplorerNodeResponse(BaseModel):

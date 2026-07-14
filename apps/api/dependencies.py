@@ -49,7 +49,8 @@ class AppState:
         self.model_router = create_default_router(
             openai_api_key=(
                 settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
-            )
+            ),
+            include_stub=settings.env in {"test", "development"},
         )
         self.plan_service = PlanService(self.model_router)
 

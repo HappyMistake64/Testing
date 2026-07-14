@@ -11,7 +11,7 @@ from pathlib import Path
 from fade_domain.ids import JobId, ProjectId, WorkspaceId
 from fade_domain.workspace import Workspace, WorkspaceLease, WorkspaceState, WorkspaceStrategy
 from fade_patch_engine.patch import file_hash
-from fade_tool_gateway.git_ops import git_rev_parse, git_worktree_add, git_worktree_remove
+from fade_tool_gateway.git_ops import git_worktree_add, git_worktree_remove
 
 
 class WorkspaceManagerError(Exception):

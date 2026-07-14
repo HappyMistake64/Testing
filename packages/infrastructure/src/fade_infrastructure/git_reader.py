@@ -103,7 +103,10 @@ def scan_inventory(
     sensitive: list[str] = []
 
     for root, dirs, files in _walk_safe(project_path):
-        dirs[:] = [d for d in dirs if d not in _IGNORE_DIRS and not d.startswith(".git")]
+        dirs[:] = [
+            d for d in dirs
+            if d.name not in _IGNORE_DIRS and not d.name.startswith(".git")
+        ]
 
         for filename in files:
             file_path = root / filename

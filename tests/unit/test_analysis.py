@@ -5,12 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from fade_domain.job import JobState, can_transition, is_terminal
 from fade_evidence.ledger import EvidenceLedger
 from fade_project_analysis.analyzer import analyze_project
 from fade_project_analysis.ignore_engine import IgnoreEngine
 from fade_project_analysis.python_parser import parse_python_file
 from fade_project_analysis.typescript_parser import parse_typescript_file
-from fade_domain.job import JobState, can_transition, is_terminal
 
 
 class TestIgnoreEngine:

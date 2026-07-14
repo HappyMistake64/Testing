@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+
+from fade_verification.verification_matrix import VerificationResult
 
 from fade_repair_loop.diagnosis import Diagnosis, FailureClass, Hypothesis
-from fade_verification.verification_matrix import VerificationResult
 
 
 @dataclass(frozen=True, slots=True)

@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 
 from fade_domain.goal import Goal
-from fade_domain.ids import GoalId, PlanId, ProjectId
+from fade_domain.ids import PlanId
 from fade_domain.plan import Plan, PlanStatus, PlanStep
 from fade_domain.project_profile import ProjectProfile
 from fade_domain.types import RiskLevel

@@ -58,7 +58,9 @@ class LocalWorker:
                     await asyncio.sleep(self._poll_interval)
                     continue
 
-                await self._record_event(evidence, job, "JOB_STARTED", {"worker_id": self._worker_id})
+                await self._record_event(
+                    evidence, job, "JOB_STARTED", {"worker_id": self._worker_id}
+                )
                 logger.info("worker_claimed_job", job_id=str(job.id), job_type=job.job_type)
 
                 try:

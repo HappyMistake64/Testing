@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from fade_patch_engine.patch import PatchEngine, PatchEngineError, PatchHunk, FileOperation, file_hash
+from fade_patch_engine.patch import (
+    FileOperation,
+    PatchEngine,
+    PatchEngineError,
+    PatchHunk,
+    file_hash,
+)
 
 
 class TestPatchEngine:
