@@ -7,7 +7,19 @@ from logging.config import fileConfig
 
 from alembic import context
 from fade_infrastructure.database import Base
-from fade_infrastructure.models import ProjectModel  # noqa: F401
+from fade_infrastructure.models import (  # noqa: F401
+    ApprovalModel,
+    ArtifactModel,
+    GoalModel,
+    JobEventModel,
+    JobModel,
+    PlanModel,
+    PolicyModel,
+    ProjectModel,
+    ProjectProfileModel,
+    SymbolIndexModel,
+    WorkspaceModel,
+)
 from fade_infrastructure.settings import get_settings
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection

@@ -41,3 +41,31 @@ class ProjectId(_TypedId):
 
 class JobId(_TypedId):
     """Unique identifier for a durable job."""
+
+
+class ProfileId(_TypedId):
+    """Unique identifier for a project analysis profile."""
+
+
+class EvidenceId(_TypedId):
+    """Unique identifier for an evidence ledger event."""
+
+
+class GoalId(_TypedId):
+    """Unique identifier for a goal."""
+
+
+class PlanId(_TypedId):
+    """Unique identifier for a plan."""
+
+
+class ArtifactId(_TypedId):
+    """Unique identifier for a stored artifact."""
+
+
+class WorkspaceId(_TypedId):
+    """Unique identifier for an isolated workspace."""
+
+
+class PolicyId(_TypedId):
+    """Unique identifier for a policy rule."""

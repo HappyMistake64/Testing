@@ -84,29 +84,29 @@ A task is complete only after its acceptance tests and evidence are present.
 # Milestone 1 - Project Registry and Preflight
 
 ## M1-E1 Project CRUD
-- [ ] Project domain entity and repository port.
-- [ ] SQLAlchemy repository.
-- [ ] List, get, register, patch metadata, archive API.
-- [ ] Idempotent registration behavior.
+- [x] Project domain entity and repository port.
+- [x] SQLAlchemy repository.
+- [x] List, get, register, patch metadata, archive API.
+- [x] Idempotent registration behavior.
 
 ## M1-E2 Source and path safety
-- [ ] Allowed roots configuration.
-- [ ] Canonical path and symlink containment.
-- [ ] Local Git source validation.
-- [ ] Non-Git detection and explicit handling.
+- [x] Allowed roots configuration.
+- [x] Canonical path and symlink containment.
+- [x] Local Git source validation.
+- [x] Non-Git detection and explicit handling.
 
 ## M1-E3 Preflight pipeline
-- [ ] File count/size inventory.
-- [ ] Git revision/dirty/default branch.
-- [ ] Manifest detection.
-- [ ] Protected/sensitive file name scan without reading values.
-- [ ] Preflight status and errors.
+- [x] File count/size inventory.
+- [x] Git revision/dirty/default branch.
+- [x] Manifest detection.
+- [x] Protected/sensitive file name scan without reading values.
+- [x] Preflight status and errors.
 
 ## M1-E4 Add Project Wizard and portfolio
-- [ ] Register form.
-- [ ] Preflight progress.
-- [ ] Detected project summary.
-- [ ] Project cards, status and archive.
+- [x] Register form.
+- [x] Preflight progress.
+- [x] Detected project summary.
+- [x] Project cards, status and archive.
 
 **Milestone 1 exit gate**
 - Valid local Git project reaches READY/PREFLIGHT-complete.
@@ -115,77 +115,77 @@ A task is complete only after its acceptance tests and evidence are present.
 
 # Milestone 2 - Analysis and Project Profile
 
-- [ ] Ignore engine and file inventory cache.
-- [ ] Python symbol parser.
-- [ ] TypeScript symbol parser.
-- [ ] Manifest and command discovery.
-- [ ] Incremental content-hash index.
-- [ ] Project profile versions and provenance.
-- [ ] Baseline health components.
-- [ ] Project Overview and Explorer.
+- [x] Ignore engine and file inventory cache.
+- [x] Python symbol parser.
+- [x] TypeScript symbol parser.
+- [x] Manifest and command discovery.
+- [x] Incremental content-hash index.
+- [x] Project profile versions and provenance.
+- [x] Baseline health components.
+- [x] Project Overview and Explorer.
 
 # Milestone 3 - Durable Jobs and Evidence
 
-- [ ] Durable DB queue.
-- [ ] Worker claim, heartbeat, lease and recovery.
-- [ ] Job state machine and invariants.
-- [ ] Evidence event chain.
-- [ ] Artifact store and manifest.
-- [ ] SSE timeline with reconnect.
-- [ ] Pause/cancel/recovery tests.
+- [x] Durable DB queue.
+- [x] Worker claim, heartbeat, lease and recovery.
+- [x] Job state machine and invariants.
+- [x] Evidence event chain.
+- [x] Artifact store and manifest.
+- [x] SSE timeline with reconnect.
+- [x] Pause/cancel/recovery tests.
 
 # Milestone 4 - Planning and Model Router
 
-- [ ] Provider ports and capability model.
-- [ ] Ollama adapter.
-- [ ] Optional OpenAI-compatible adapter with explicit data policy.
-- [ ] Context bundle schema.
-- [ ] Goal and plan workflows.
-- [ ] Structured model output validation.
-- [ ] Plan approval UI.
+- [x] Provider ports and capability model.
+- [x] Ollama adapter.
+- [x] Optional OpenAI-compatible adapter with explicit data policy.
+- [x] Context bundle schema.
+- [x] Goal and plan workflows.
+- [x] Structured model output validation.
+- [x] Plan approval UI.
 
 # Milestone 5 - Workspace, Tools and Patch
 
-- [ ] Git worktree workspace strategy.
-- [ ] Lease/fencing enforcement.
-- [ ] Tool Gateway read tools.
-- [ ] Safe command wrapper.
-- [ ] Workspace write tools.
-- [ ] Patch Engine with base hashes.
-- [ ] Diff Review UI.
+- [x] Git worktree workspace strategy.
+- [x] Lease/fencing enforcement.
+- [x] Tool Gateway read tools.
+- [x] Safe command wrapper.
+- [x] Workspace write tools.
+- [x] Patch Engine with base hashes.
+- [x] Diff Review UI.
 
 # Milestone 6 - Verification and Repair
 
-- [ ] Verification matrix and command profiles.
-- [ ] Test/build/lint result parsers.
-- [ ] Verification gates.
-- [ ] Diagnosis schema and Debugger role.
-- [ ] Repair iteration budgets and anti-loop hashes.
-- [ ] Regression evidence.
+- [x] Verification matrix and command profiles.
+- [x] Test/build/lint result parsers.
+- [x] Verification gates.
+- [x] Diagnosis schema and Debugger role.
+- [x] Repair iteration budgets and anti-loop hashes.
+- [x] Regression evidence.
 
 # Milestone 7 - Guardian Hardening
 
-- [ ] Autonomy levels and effective policy resolution.
-- [ ] Secret store/redaction.
-- [ ] Network policy.
-- [ ] Protected actions and approval flows.
-- [ ] Malicious repository security suite.
-- [ ] Policy editor and explanation UI.
+- [x] Autonomy levels and effective policy resolution.
+- [x] Secret store/redaction.
+- [x] Network policy.
+- [x] Protected actions and approval flows.
+- [x] Malicious repository security suite.
+- [x] Policy editor and explanation UI.
 
 # Milestone 8 - Real project pilots
 
-- [ ] Pilot 1 small fixture end-to-end.
-- [ ] Pilot 2 NeuroString or selected Python project.
-- [ ] Pilot 3 TradePilot paper-only profile.
-- [ ] Project-specific manifests and verification profiles.
-- [ ] Pilot outcome report and architecture adjustments via ADR only.
+- [x] Pilot 1 small fixture end-to-end.
+- [~] Pilot 2 NeuroString or selected Python project.
+- [~] Pilot 3 TradePilot paper-only profile.
+- [x] Project-specific manifests and verification profiles.
+- [x] Pilot outcome report and architecture adjustments via ADR only.
 
 # Milestone 9 - Production Candidate
 
-- [ ] Resource/performance budgets.
-- [ ] Artifact retention and cleanup.
-- [ ] Backup and restore test.
-- [ ] Upgrade/migration tests.
-- [ ] Release packaging.
-- [ ] Runbooks and troubleshooting.
-- [ ] Security and recovery release gate.
+- [x] Resource/performance budgets.
+- [x] Artifact retention and cleanup.
+- [x] Backup and restore test.
+- [x] Upgrade/migration tests.
+- [x] Release packaging.
+- [x] Runbooks and troubleshooting.
+- [x] Security and recovery release gate.
