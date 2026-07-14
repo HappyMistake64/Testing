@@ -93,15 +93,28 @@ workers/        Lokální durable worker (M3+)
 
 ## Aktuální stav
 
-**Milestone 0 — Foundation and Architecture Lock** ✅
+**Milestones M0–M9 — Production Candidate** ✅
 
-**Milestone 1 — Project Registry and Preflight** ✅
+| Milník | Stav | Popis |
+|--------|------|-------|
+| M0 | ✅ | Základ, health API, System Status |
+| M1 | ✅ | Project Registry, preflight, portfolio |
+| M2 | ✅ | Analýza, symbol parsery, Explorer |
+| M3 | ✅ | Durable jobs, evidence chain, worker |
+| M4 | ✅ | Model router, goals & plans |
+| M5 | ✅ | Tool Gateway, workspaces, patch engine |
+| M6 | ✅ | Verification gates, repair loop |
+| M7 | ✅ | Guardian policies, security suite |
+| M8 | ✅ | Pilot E2E flow |
+| M9 | ✅ | Backup, security scan, runbooks |
 
-- Project CRUD API s idempotentní registrací
-- Path safety (allowed roots, symlink containment)
-- Preflight pipeline (inventory, Git metadata, manifests, sensitive scan)
-- Portfolio dashboard, Add Project wizard, Project detail
-- 33 backend testů, security fixtures
+**Testy:** 90 (89 backend + 1 e2e), security scan PASS
+
+```bash
+./scripts/test.sh          # všechny testy
+./scripts/security-scan.sh # pip-audit + npm audit
+./scripts/backup.sh        # záloha DB a artefaktů
+```
 
 ## Licence
 
