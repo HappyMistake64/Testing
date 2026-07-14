@@ -90,7 +90,11 @@ class AppState:
         return PolicyService(SqlAlchemyPolicyRepository(session))
 
     def job_queue(self, session: AsyncSession) -> SqlAlchemyJobQueue:
-        return SqlAlchemyJobQueue(session, SqlAlchemyJobRepository(session))
+        return SqlAlchemyJobQueue(
+            session,
+            SqlAlchemyJobRepository(session),
+            self.settings,
+        )
 
     def goal_service(self, session: AsyncSession) -> GoalApplicationService:
         return GoalApplicationService(
