@@ -1,0 +1,48 @@
+---
+description: FADE platform master rules for Cursor implementation
+alwaysApply: true
+---
+
+# FADE Master Rules
+
+You are implementing **FADE - First Artificial David's Ecosystem**.
+
+## Source of truth (read order)
+
+1. `docs/WHITE_PAPER.md`
+2. `docs/ARCHITECTURE_DECISIONS.md`
+3. `docs/IMPLEMENTATION_BACKLOG.md`
+4. This file
+
+Conflict resolution: owner decision > ADR > White Paper > Backlog > implementation preference.
+
+## Locked architecture
+
+- Linux-first (Ubuntu 24.04 LTS / WSL2)
+- Modular monolith + local durable worker
+- Backend: Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic
+- Frontend: React, TypeScript, Vite, TanStack Query, Zustand
+- Persistence MVP: SQLite WAL (no mandatory Redis/Celery/PostgreSQL/Kubernetes)
+- Managed projects stay in separate repositories
+- Mutations only in isolated Git worktree/workspace
+- All agent side effects through Tool Gateway + Guardian policy
+- Model cannot grant permissions or mark jobs complete without deterministic verification gate
+- Local model provider is default; cloud is explicit opt-in only
+- Evidence, audit and recovery are foundational
+
+## Implementation rules
+
+- Implement one approved milestone at a time
+- `domain` must NOT import FastAPI, SQLAlchemy, or infrastructure
+- API routers must be thin
+- No `subprocess` outside future `infrastructure/tool_gateway`
+- No hard-coded user-specific absolute paths
+- No real API keys in repository
+- Every DB change goes through Alembic
+- No fake AI analysis or agent responses as finished functionality
+- Do not add technologies outside locked stack without ADR proposal
+
+## Current milestone
+
+Check `docs/IMPLEMENTATION_BACKLOG.md` for current milestone status.
+Only implement the current approved milestone.
