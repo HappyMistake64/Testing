@@ -20,18 +20,11 @@ Lokální autonomní AI platforma pro řízení, analýzu, vývoj, testování a
 git clone <repo-url> fade-platform
 cd fade-platform
 
-# 2. Zkopírovat konfiguraci
-cp .env.example .env
-
-# 3. Nainstalovat závislosti
-uv sync --all-extras
-pnpm install
-
-# 4. Spustit migrace
-uv run alembic upgrade head
-
-# 5. Spustit vývojové prostředí (API + Web)
+# 2. Bootstrap prostředí (konfigurace, závislosti, migrace)
 chmod +x scripts/*.sh
+./scripts/setup.sh
+
+# 3. Spustit vývojové prostředí (API + worker + Web)
 ./scripts/dev.sh
 ```
 

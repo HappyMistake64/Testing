@@ -6,8 +6,9 @@ cd "$ROOT"
 
 echo "==> FADE dev environment"
 
-# Ensure runtime directory
-mkdir -p var
+# Ensure runtime directories
+mkdir -p var/{artifacts,workspaces,logs,indexes}
+mkdir -p backups
 
 # Install Python dependencies if needed
 if [[ ! -d .venv ]]; then
@@ -25,10 +26,11 @@ if [[ ! -d apps/web/node_modules ]]; then
   pnpm install
 fi
 
-echo "==> Starting API (port 8000) and Web (port 5173)"
+echo "==> Starting API (port 8000), worker, and Web (port 5173)"
 trap 'kill 0' EXIT
 
 uv run uvicorn apps.api.main:app --host 127.0.0.1 --port 8000 --reload &
+uv run python workers/local_worker.py &
 pnpm --filter @fade/web dev &
 
 wait

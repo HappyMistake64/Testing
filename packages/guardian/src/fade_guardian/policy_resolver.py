@@ -122,9 +122,19 @@ class PolicyResolver:
         for rule in self._rules:
             if not rule.enabled:
                 continue
-            if rule.scope_type == PolicyScope.GLOBAL or rule.scope_type == PolicyScope.PROJECT and project_id and rule.scope_id == str(
-                project_id
-            ) or rule.scope_type == PolicyScope.WORKSPACE and workspace_id and rule.scope_id == workspace_id:
+            if (
+                rule.scope_type == PolicyScope.GLOBAL
+                or (
+                    rule.scope_type == PolicyScope.PROJECT
+                    and project_id
+                    and rule.scope_id == str(project_id)
+                )
+                or (
+                    rule.scope_type == PolicyScope.WORKSPACE
+                    and workspace_id
+                    and rule.scope_id == workspace_id
+                )
+            ):
                 result.append(rule)
         return result
 

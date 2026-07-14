@@ -21,7 +21,11 @@ class SqlAlchemyWorkspaceRepository:
         model = WorkspaceModel(
             id=str(workspace.id),
             project_id=str(workspace.project_id),
-            job_id=str(job_id) if job_id else (str(workspace.lease.job_id) if workspace.lease else None),
+            job_id=(
+                str(job_id)
+                if job_id
+                else (str(workspace.lease.job_id) if workspace.lease else None)
+            ),
             path=workspace.path,
             strategy=workspace.strategy.value,
             base_revision=workspace.base_revision,

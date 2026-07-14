@@ -90,7 +90,9 @@ class JobModel(Base):
     checkpoint_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     budgets_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     worker_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -232,7 +234,9 @@ class WorkspaceModel(Base):
     branch: Mapped[str | None] = mapped_column(String(255), nullable=True)
     state: Mapped[str] = mapped_column(String(50), nullable=False, default="creating")
     lease_token: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     file_hashes_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

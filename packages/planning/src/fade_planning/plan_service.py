@@ -16,14 +16,22 @@ from pydantic import ValidationError
 
 from fade_planning.schemas import PlanOutputSchema
 
-_SYSTEM_PROMPT = """You are a software planning assistant. Respond with JSON only matching this schema:
-{
-  "assumptions": ["string"],
-  "steps": [{"ordinal": 1, "title": "...", "description": "...", "step_type": "...", "acceptance_criteria": ["..."]}],
-  "test_plan": ["string"],
-  "risk_level": "low|medium|high|critical"
-}
-"""
+_SYSTEM_PROMPT = (
+    "You are a software planning assistant. "
+    "Respond with JSON only matching this schema:\n"
+    "{\n"
+    '  "assumptions": ["string"],\n'
+    '  "steps": [{\n'
+    '    "ordinal": 1,\n'
+    '    "title": "...",\n'
+    '    "description": "...",\n'
+    '    "step_type": "...",\n'
+    '    "acceptance_criteria": ["..."]\n'
+    "  }],\n"
+    '  "test_plan": ["string"],\n'
+    '  "risk_level": "low|medium|high|critical"\n'
+    "}\n"
+)
 
 
 @dataclass(frozen=True, slots=True)
