@@ -38,6 +38,7 @@ class JobResponse(BaseModel):
     lease_expires_at: datetime | None
     created_at: datetime
     updated_at: datetime
+    checkpoint: dict[str, object] = Field(default_factory=dict)
 
 
 class JobEventResponse(BaseModel):
@@ -63,6 +64,7 @@ def _to_job_response(job) -> JobResponse:
         lease_expires_at=job.lease_expires_at,
         created_at=job.created_at,
         updated_at=job.updated_at,
+        checkpoint=job.checkpoint,
     )
 
 
@@ -177,6 +179,8 @@ class DiffResponse(BaseModel):
     files: list[DiffFileResponse]
     review_status: str
     findings: list[dict[str, object]] = Field(default_factory=list)
+    verification: dict[str, object] | None = None
+    promoted_files: list[str] = Field(default_factory=list)
 
 
 @router.get("/{job_id}/diff", response_model=DiffResponse)
@@ -208,6 +212,83 @@ async def job_diff(
         ],
         review_status=str(diff_data["review_status"]),
         findings=list(diff_data["findings"]),
+        verification=(
+            diff_data["verification"]
+            if isinstance(diff_data.get("verification"), dict)
+            else None
+        ),
+        promoted_files=list(diff_data.get("promoted_files", [])),
+    )
+
+
+class RejectDiffRequest(BaseModel):
+    reason: str = ""
+
+
+class ApplyDiffResponse(BaseModel):
+    job_id: str
+    promoted_files: list[str]
+    source_path: str
+    job: JobResponse
+
+
+@router.post("/{job_id}/diff/approve", response_model=JobResponse)
+async def approve_job_diff(
+    job_id: str,
+    service: Annotated[JobService, Depends(get_job_service)],
+    runtime: Annotated[AgentRuntimeOrchestrator, Depends(get_agent_runtime)],
+) -> JobResponse:
+    job = await service.get_job(JobId.from_string(job_id))
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    try:
+        updated = await runtime.approve_diff(JobId.from_string(job_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _to_job_response(updated)
+
+
+@router.post("/{job_id}/diff/reject", response_model=JobResponse)
+async def reject_job_diff(
+    job_id: str,
+    body: RejectDiffRequest,
+    service: Annotated[JobService, Depends(get_job_service)],
+    runtime: Annotated[AgentRuntimeOrchestrator, Depends(get_agent_runtime)],
+) -> JobResponse:
+    job = await service.get_job(JobId.from_string(job_id))
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    try:
+        updated = await runtime.reject_diff(
+            JobId.from_string(job_id),
+            reason=body.reason,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return _to_job_response(updated)
+
+
+@router.post("/{job_id}/diff/apply", response_model=ApplyDiffResponse)
+async def apply_job_diff(
+    job_id: str,
+    service: Annotated[JobService, Depends(get_job_service)],
+    runtime: Annotated[AgentRuntimeOrchestrator, Depends(get_agent_runtime)],
+) -> ApplyDiffResponse:
+    job = await service.get_job(JobId.from_string(job_id))
+    if job is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    try:
+        result = await runtime.apply_to_source(JobId.from_string(job_id))
+        updated = await service.get_job(JobId.from_string(job_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return ApplyDiffResponse(
+        job_id=str(result["job_id"]),
+        promoted_files=list(result["promoted_files"]),
+        source_path=str(result["source_path"]),
+        job=_to_job_response(updated),
     )
 
 

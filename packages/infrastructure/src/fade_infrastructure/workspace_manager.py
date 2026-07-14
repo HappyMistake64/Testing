@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import secrets
 import shutil
 from datetime import UTC, datetime, timedelta
@@ -139,7 +140,27 @@ class WorkspaceManager:
             ignore=shutil.ignore_patterns(".git"),
             dirs_exist_ok=True,
         )
+        self._init_git_snapshot(dest)
         return dest
+
+    def _init_git_snapshot(self, path: Path) -> None:
+        """Initialize an isolated git repo so workspace diffs do not leak to parents."""
+        from fade_tool_gateway.runner import run_command
+
+        env = {
+            **os.environ,
+            "GIT_AUTHOR_NAME": "FADE",
+            "GIT_AUTHOR_EMAIL": "fade@workspace.local",
+            "GIT_COMMITTER_NAME": "FADE",
+            "GIT_COMMITTER_EMAIL": "fade@workspace.local",
+        }
+        run_command(["git", "init", "-b", "main"], cwd=str(path), env=env)
+        run_command(["git", "add", "."], cwd=str(path), env=env)
+        run_command(
+            ["git", "commit", "-m", "FADE workspace snapshot"],
+            cwd=str(path),
+            env=env,
+        )
 
     def _create_lease(self, job_id: JobId) -> WorkspaceLease:
         return WorkspaceLease(

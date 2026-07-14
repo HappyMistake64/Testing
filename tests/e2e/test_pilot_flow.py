@@ -133,3 +133,12 @@ class TestPilotFlow:
 
         main_py = repo_path / "src" / "pilot_app" / "main.py"
         assert "Welcome to FADE" not in main_py.read_text(encoding="utf-8")
+
+        approve_diff = await ac.post(f"/api/v1/jobs/{job_id}/diff/approve")
+        assert approve_diff.status_code == 200
+        assert approve_diff.json()["checkpoint"]["review_status"] == "approved"
+
+        apply_diff = await ac.post(f"/api/v1/jobs/{job_id}/diff/apply")
+        assert apply_diff.status_code == 200
+        assert len(apply_diff.json()["promoted_files"]) > 0
+        assert "Welcome to FADE" in main_py.read_text(encoding="utf-8")

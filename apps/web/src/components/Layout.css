@@ -97,9 +97,22 @@
 }
 
 .status-badge--ready,
-.status-badge--pass {
+.status-badge--pass,
+.status-badge--approved,
+.status-badge--applied {
   background: rgba(34, 197, 94, 0.15);
   color: var(--color-success);
+}
+
+.status-badge--pending,
+.status-badge--needs_review {
+  background: rgba(234, 179, 8, 0.15);
+  color: #ca8a04;
+}
+
+.status-badge--rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-error);
 }
 
 .status-badge--preflight,
@@ -486,6 +499,26 @@
 .diff-stats {
   color: var(--color-success);
   font-family: monospace;
+}
+
+.verification-checks {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+
+.verification-checks li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.verification-checks li:last-child {
+  border-bottom: none;
+}
+
+.text-success {
+  color: var(--color-success);
+  margin-top: 0.75rem;
 }
 
 .policy-table {

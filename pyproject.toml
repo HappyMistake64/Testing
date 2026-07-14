@@ -74,7 +74,7 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
-norecursedirs = ["fixtures/pilot_small", "node_modules", ".git", "dist", "build"]
+norecursedirs = ["fixtures/pilot_small", "fixtures/pilot_neurostring", "fixtures/pilot_tradepilot", "node_modules", ".git", "dist", "build"]
 
 [tool.ruff]
 target-version = "py312"

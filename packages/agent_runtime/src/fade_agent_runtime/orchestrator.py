@@ -32,16 +32,21 @@ from fade_verification.gates import VerificationGate
 from fade_verification.verification_matrix import VerificationResult
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from fade_agent_runtime.agent_loop import gather_context_via_tools
 from fade_agent_runtime.diff import parse_unified_diff
 from fade_agent_runtime.implementation import (
     ImplementationParseError,
     apply_implementation,
-    collect_context_files,
-    default_context_paths,
     parse_implementation_output,
+)
+from fade_agent_runtime.promotion import (
+    PromotionError,
+    promote_workspace_to_source,
+    workspace_diff_text,
 )
 from fade_agent_runtime.prompts import IMPLEMENTATION_SYSTEM_PROMPT, REPAIR_SYSTEM_PROMPT
 from fade_agent_runtime.verification import matrix_for_workspace
+from fade_agent_runtime.verification_serialize import serialize_verification
 
 
 class AgentRuntimeOrchestrator:
@@ -107,6 +112,7 @@ class AgentRuntimeOrchestrator:
             diff_result = gateway.git_diff()
             files = parse_unified_diff(diff_result.diff)
             review_status = str(job.checkpoint.get("review_status", "pending"))
+            verification = job.checkpoint.get("verification")
             return {
                 "job_id": str(job_id),
                 "base_revision": workspace.base_revision or "",
@@ -122,6 +128,131 @@ class AgentRuntimeOrchestrator:
                 ],
                 "review_status": review_status,
                 "findings": list(job.checkpoint.get("findings", [])),
+                "verification": verification if isinstance(verification, dict) else None,
+                "promoted_files": list(job.checkpoint.get("promoted_files", [])),
+            }
+
+    async def approve_diff(self, job_id: JobId, *, actor_id: str = "user") -> Job:
+        async with self._session_factory() as session:
+            repositories = _Repositories(session)
+            job = await repositories.jobs.get_by_id(job_id)
+            if job is None:
+                msg = f"Job not found: {job_id}"
+                raise ValueError(msg)
+            if job.state != JobState.COMPLETED:
+                msg = "Job must be completed before diff approval"
+                raise ValueError(msg)
+            review_status = str(job.checkpoint.get("review_status", "pending"))
+            if review_status in {"approved", "rejected", "applied"}:
+                msg = f"Diff already {review_status}"
+                raise ValueError(msg)
+            job = await self._update_checkpoint(repositories, job, review_status="approved")
+            await self._record_event(
+                repositories,
+                job,
+                "DIFF_APPROVED",
+                {"actor_id": actor_id},
+                actor_id,
+            )
+            return job
+
+    async def reject_diff(
+        self,
+        job_id: JobId,
+        *,
+        reason: str = "",
+        actor_id: str = "user",
+    ) -> Job:
+        async with self._session_factory() as session:
+            repositories = _Repositories(session)
+            job = await repositories.jobs.get_by_id(job_id)
+            if job is None:
+                msg = f"Job not found: {job_id}"
+                raise ValueError(msg)
+            if job.state != JobState.COMPLETED:
+                msg = "Job must be completed before diff rejection"
+                raise ValueError(msg)
+            review_status = str(job.checkpoint.get("review_status", "pending"))
+            if review_status in {"approved", "rejected", "applied"}:
+                msg = f"Diff already {review_status}"
+                raise ValueError(msg)
+            job = await self._update_checkpoint(
+                repositories,
+                job,
+                review_status="rejected",
+                rejection_reason=reason,
+            )
+            await self._record_event(
+                repositories,
+                job,
+                "DIFF_REJECTED",
+                {"actor_id": actor_id, "reason": reason},
+                actor_id,
+            )
+            return job
+
+    async def apply_to_source(self, job_id: JobId, *, actor_id: str = "user") -> dict[str, object]:
+        async with self._session_factory() as session:
+            repositories = _Repositories(session)
+            job = await repositories.jobs.get_by_id(job_id)
+            if job is None:
+                msg = f"Job not found: {job_id}"
+                raise ValueError(msg)
+            if str(job.checkpoint.get("review_status")) != "approved":
+                msg = "Diff must be approved before apply"
+                raise ValueError(msg)
+            if job.checkpoint.get("applied_at"):
+                msg = "Changes already applied to source"
+                raise ValueError(msg)
+
+            workspace_id = _workspace_id_from_job(job)
+            if workspace_id is None:
+                msg = "Workspace not found for job"
+                raise ValueError(msg)
+
+            workspace = await repositories.workspaces.get_by_id(workspace_id)
+            project = await repositories.projects.get_by_id(job.project_id)
+            if workspace is None or project is None:
+                msg = "Workspace or project not found"
+                raise ValueError(msg)
+
+            workspace_path = Path(workspace.path)
+            source_path = Path(project.source_location)
+            diff_text = workspace_diff_text(workspace_path)
+            applied_files = [
+                str(path)
+                for path in job.checkpoint.get("applied_files", [])
+                if isinstance(path, str)
+            ]
+            try:
+                promoted = promote_workspace_to_source(
+                    workspace_path=workspace_path,
+                    source_path=source_path,
+                    diff_text=diff_text,
+                    file_paths=applied_files or None,
+                )
+            except PromotionError as exc:
+                msg = exc.message
+                raise ValueError(msg) from exc
+
+            job = await self._update_checkpoint(
+                repositories,
+                job,
+                review_status="applied",
+                promoted_files=promoted,
+                applied_at=datetime.now(UTC).isoformat(),
+            )
+            await self._record_event(
+                repositories,
+                job,
+                "DIFF_APPLIED",
+                {"actor_id": actor_id, "promoted_files": promoted},
+                actor_id,
+            )
+            return {
+                "job_id": str(job_id),
+                "promoted_files": promoted,
+                "source_path": str(source_path),
             }
 
     async def _execute_analyze(self, repositories: _Repositories, job: Job, worker_id: str) -> Job:
@@ -184,14 +315,14 @@ class AgentRuntimeOrchestrator:
             job,
             workspace_id=str(workspace.id),
             review_status="pending",
+            applied_files=[],
         )
         job = await self._transition(
             repositories, job, JobState.RUNNING, "IMPLEMENTATION_STARTED", worker_id
         )
 
         workspace_path = Path(workspace.path)
-        context_paths = default_context_paths(workspace_path)
-        context = collect_context_files(workspace_path, relative_paths=context_paths)
+        context = gather_context_via_tools(workspace_path, goal)
         user_prompt = _build_implementation_prompt(goal, plan, profile, context)
 
         try:
@@ -211,6 +342,11 @@ class AgentRuntimeOrchestrator:
                     "model_id": completion.model_id,
                 },
                 worker_id,
+            )
+            job = await self._update_checkpoint(
+                repositories,
+                job,
+                applied_files=apply_result.applied_files,
             )
             artifacts = ArtifactStore(self._settings, repositories.session)
             await artifacts.store_text(
@@ -254,6 +390,7 @@ class AgentRuntimeOrchestrator:
                 else "needs_review"
             ),
             findings=[{"summary": gate_result.summary}],
+            verification=serialize_verification(gate_result),
         )
 
         if gate_result.result in {VerificationResult.PASS, VerificationResult.PASS_WITH_WARNINGS}:
@@ -307,6 +444,7 @@ class AgentRuntimeOrchestrator:
                 if second_gate.result == VerificationResult.PASS
                 else "needs_review"
             ),
+            verification=serialize_verification(second_gate),
         )
 
         if second_gate.result in {VerificationResult.PASS, VerificationResult.PASS_WITH_WARNINGS}:
@@ -339,8 +477,7 @@ class AgentRuntimeOrchestrator:
         worker_id: str,
     ) -> Job | None:
         workspace_path = Path(workspace.path)
-        context_paths = default_context_paths(workspace_path)
-        context = collect_context_files(workspace_path, relative_paths=context_paths)
+        context = gather_context_via_tools(workspace_path, goal)
         user_prompt = _build_repair_prompt(goal, failure_summary, context)
 
         completion = await self._model_router.complete(

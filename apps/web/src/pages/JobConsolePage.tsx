@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { jobsApi } from "@/api/client";
-import type { JobEvent } from "@/api/types";
+import type { JobEvent, VerificationDetail } from "@/api/types";
 
 export function JobConsolePage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -34,6 +34,11 @@ export function JobConsolePage() {
   if (isLoading) return <div className="loading">Loading job…</div>;
   if (isError || !job) return <div className="error-state">Job not found.</div>;
 
+  const verification = job.checkpoint?.verification as VerificationDetail | undefined;
+  const reviewStatus = typeof job.checkpoint?.review_status === "string"
+    ? job.checkpoint.review_status
+    : null;
+
   return (
     <>
       <header className="page-header">
@@ -50,6 +55,12 @@ export function JobConsolePage() {
         <div className="data-grid">
           <div className="data-item"><label>Autonomy</label><span>{job.autonomy_level}</span></div>
           <div className="data-item"><label>Worker</label><span>{job.worker_id ?? "—"}</span></div>
+          {reviewStatus && (
+            <div className="data-item">
+              <label>Review</label>
+              <span className={`status-badge status-badge--${reviewStatus}`}>{reviewStatus}</span>
+            </div>
+          )}
         </div>
         <div className="button-row">
           <button type="button" onClick={() => pauseMutation.mutate()} disabled={pauseMutation.isPending}>Pause</button>
@@ -58,6 +69,25 @@ export function JobConsolePage() {
           <Link to={`/jobs/${jobId}/diff`} className="btn-secondary">Review Diff</Link>
         </div>
       </div>
+
+      {verification && (
+        <div className="card">
+          <div className="card-header">
+            <h2>Verification</h2>
+            <span className={`status-badge status-badge--${verification.result}`}>
+              {verification.result}
+            </span>
+          </div>
+          <p>{verification.summary}</p>
+          <ul className="verification-checks">
+            {verification.checks.map((check) => (
+              <li key={check.name}>
+                <strong>{check.name}</strong> — exit {check.exit_code}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="card">
         <h2>Event Timeline</h2>

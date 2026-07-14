@@ -1,4 +1,5 @@
 import type {
+  ApplyDiffResponse,
   CreateGoalRequest,
   DiffResponse,
   DoctorResponse,
@@ -122,6 +123,15 @@ export const jobsApi = {
   eventsStreamUrl: (jobId: string, after = 0) =>
     `${API_BASE}/api/v1/jobs/${jobId}/events?after=${after}`,
   diff: (jobId: string) => request<DiffResponse>(`/api/v1/jobs/${jobId}/diff`),
+  approveDiff: (jobId: string) =>
+    request<Job>(`/api/v1/jobs/${jobId}/diff/approve`, { method: "POST" }),
+  rejectDiff: (jobId: string, reason = "") =>
+    request<Job>(`/api/v1/jobs/${jobId}/diff/reject`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  applyDiff: (jobId: string) =>
+    request<ApplyDiffResponse>(`/api/v1/jobs/${jobId}/diff/apply`, { method: "POST" }),
 };
 
 export const policiesApi = {

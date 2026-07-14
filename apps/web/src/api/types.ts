@@ -219,6 +219,24 @@ export interface Job {
   lease_expires_at: string | null;
   created_at: string;
   updated_at: string;
+  checkpoint: Record<string, unknown>;
+}
+
+export interface VerificationCheck {
+  name: string;
+  layer: string;
+  required: boolean;
+  exit_code: number;
+  blocked: boolean;
+  block_reason: string | null;
+  stdout_tail: string;
+  stderr_tail: string;
+}
+
+export interface VerificationDetail {
+  result: string;
+  summary: string;
+  checks: VerificationCheck[];
 }
 
 export interface JobEvent {
@@ -246,6 +264,15 @@ export interface DiffResponse {
   files: DiffFile[];
   review_status: string;
   findings: Array<Record<string, unknown>>;
+  verification: VerificationDetail | null;
+  promoted_files: string[];
+}
+
+export interface ApplyDiffResponse {
+  job_id: string;
+  promoted_files: string[];
+  source_path: string;
+  job: Job;
 }
 
 export interface Policy {
