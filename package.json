@@ -1,0 +1,16 @@
+{
+  "name": "fade-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FADE - First Artificial David's Ecosystem",
+  "scripts": {
+    "dev": "pnpm --filter @fade/web dev",
+    "build": "pnpm --filter @fade/web build",
+    "test": "pnpm --filter @fade/web test",
+    "lint": "pnpm --filter @fade/web lint",
+    "typecheck": "pnpm --filter @fade/web typecheck"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

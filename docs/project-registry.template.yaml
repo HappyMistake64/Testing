@@ -1,0 +1,32 @@
+schema_version: 1
+projects:
+  - name: NeuroString
+    enabled: false
+    source:
+      type: local_git
+      path: /replace/with/actual/path/neurostring
+    autonomy_default: plan
+    profile: python
+    notes: "Recommended early real-project pilot after fixture validation."
+
+  - name: TradePilot
+    enabled: false
+    source:
+      type: local_git
+      path: /replace/with/actual/path/tradepilot
+    autonomy_default: assisted
+    profile: python_web_financial
+    policies:
+      production_trading: deny
+      paper_trading: allow_within_manifest
+      external_side_effects: require_critical_approval
+
+  - name: CRATE
+    enabled: false
+    source:
+      type: local_git
+      path: /replace/with/actual/path/crate
+    autonomy_default: plan
+    profile: flutter
+
+# Add only projects selected by the owner. Paths are placeholders and must not be committed with secrets.
