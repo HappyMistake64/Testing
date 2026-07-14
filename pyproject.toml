@@ -32,30 +32,12 @@ members = [
     "packages/domain",
     "packages/application",
     "packages/infrastructure",
-    "packages/project_analysis",
-    "packages/evidence",
-    "packages/model_router",
-    "packages/planning",
-    "packages/tool_gateway",
-    "packages/patch_engine",
-    "packages/verification",
-    "packages/repair_loop",
-    "packages/guardian",
 ]
 
 [tool.uv.sources]
 fade-domain = { workspace = true }
 fade-application = { workspace = true }
 fade-infrastructure = { workspace = true }
-fade-project-analysis = { workspace = true }
-fade-evidence = { workspace = true }
-fade-model-router = { workspace = true }
-fade-planning = { workspace = true }
-fade-tool-gateway = { workspace = true }
-fade-patch-engine = { workspace = true }
-fade-verification = { workspace = true }
-fade-repair-loop = { workspace = true }
-fade-guardian = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
@@ -70,7 +52,6 @@ asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 pythonpath = ["."]
 filterwarnings = ["ignore::DeprecationWarning"]
-norecursedirs = ["fixtures/pilot_small", "node_modules", ".git", "dist", "build"]
 
 [tool.ruff]
 target-version = "py312"

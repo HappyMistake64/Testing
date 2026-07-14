@@ -59,7 +59,7 @@ class TestSystemHealth:
         assert data["version"] == "0.1.0"
         assert "database" in data
         assert data["database"]["connected"] is True
-        assert data["capabilities"]["project_registry"] is True
+        assert data["capabilities"]["project_registry"] is False
 
     @pytest.mark.asyncio
     async def test_health_includes_correlation_id(self, client: AsyncClient) -> None:

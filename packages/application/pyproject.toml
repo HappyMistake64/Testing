@@ -6,21 +6,10 @@ build-backend = "hatchling.build"
 name = "fade-application"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = [
-    "fade-domain",
-    "fade-evidence",
-    "fade-planning",
-    "fade-repair-loop",
-    "fade-verification",
-]
+dependencies = ["fade-domain"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fade_application"]
 
 [tool.uv.sources]
 fade-domain = { workspace = true }
-fade-infrastructure = { workspace = true }
-fade-repair-loop = { workspace = true }
-fade-verification = { workspace = true }
-fade-evidence = { workspace = true }
-fade-planning = { workspace = true }

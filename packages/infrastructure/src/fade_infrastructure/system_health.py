@@ -36,13 +36,13 @@ class SystemHealthService(SystemHealthPort):
         status = "healthy" if all_ok else "degraded"
 
         capabilities = {
-            "project_registry": True,
-            "project_analysis": True,
+            "project_registry": False,
+            "project_analysis": False,
             "agent_runtime": False,
             "tool_gateway": False,
-            "model_router": True,
-            "evidence_ledger": True,
-            "job_queue": True,
+            "model_router": False,
+            "evidence_ledger": False,
+            "job_queue": False,
             "workspace_isolation": False,
         }
 
@@ -107,12 +107,11 @@ class SystemHealthService(SystemHealthPort):
             "checks": checks,
             "issues": issues,
             "capabilities": {
-                "project_registry": True,
-                "project_analysis": True,
+                "project_registry": False,
+                "project_analysis": False,
                 "agent_runtime": False,
                 "tool_gateway": False,
-                "model_router": True,
-                "evidence_ledger": True,
-                "job_queue": True,
+                "model_router": False,
+                "evidence_ledger": False,
             },
         }

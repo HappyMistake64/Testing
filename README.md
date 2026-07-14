@@ -44,24 +44,12 @@ Otevřete http://localhost:5173 pro dashboard. API běží na http://127.0.0.1:8
 ./scripts/test.sh      # Všechny testy, lint, build
 ```
 
-## API endpointy
-
-### System (M0)
+## API endpointy (Milestone 0)
 
 | Endpoint | Popis |
 |----------|-------|
 | `GET /api/v1/system/health` | Stav platformy, databáze, capabilities |
 | `GET /api/v1/system/doctor` | Rozšířená diagnostika s issues |
-
-### Projects (M1)
-
-| Endpoint | Popis |
-|----------|-------|
-| `GET /api/v1/projects` | Seznam registrovaných projektů |
-| `POST /api/v1/projects` | Registrace + preflight |
-| `GET /api/v1/projects/{id}` | Detail projektu |
-| `PATCH /api/v1/projects/{id}` | Aktualizace metadat |
-| `POST /api/v1/projects/{id}/archive` | Archivace projektu |
 
 ## Architektura
 
@@ -93,28 +81,14 @@ workers/        Lokální durable worker (M3+)
 
 ## Aktuální stav
 
-**Milestones M0–M9 — Production Candidate** ✅
+**Milestone 0 — Foundation and Architecture Lock** ✅
 
-| Milník | Stav | Popis |
-|--------|------|-------|
-| M0 | ✅ | Základ, health API, System Status |
-| M1 | ✅ | Project Registry, preflight, portfolio |
-| M2 | ✅ | Analýza, symbol parsery, Explorer |
-| M3 | ✅ | Durable jobs, evidence chain, worker |
-| M4 | ✅ | Model router, goals & plans |
-| M5 | ✅ | Tool Gateway, workspaces, patch engine |
-| M6 | ✅ | Verification gates, repair loop |
-| M7 | ✅ | Guardian policies, security suite |
-| M8 | ✅ | Pilot E2E flow |
-| M9 | ✅ | Backup, security scan, runbooks |
-
-**Testy:** 90 (89 backend + 1 e2e), security scan PASS
-
-```bash
-./scripts/test.sh          # všechny testy
-./scripts/security-scan.sh # pip-audit + npm audit
-./scripts/backup.sh        # záloha DB a artefaktů
-```
+- Repository struktura a toolchain (uv + pnpm)
+- Domain typy: ProjectId, JobId, RiskLevel, AutonomyLevel, ErrorCode
+- FastAPI s health/doctor, correlation ID, error envelope
+- React System Status stránka
+- SQLite WAL + Alembic + projects tabulka
+- Testy: unit, integration, architecture boundary, frontend component
 
 ## Licence
 
