@@ -38,6 +38,7 @@ class LocalWorker:
         self._running = True
         settings = get_settings()
         configure_logging(settings)
+        self._settings = settings
         self._engine = create_engine(settings)
         self._session_factory = create_session_factory(self._engine)
 
@@ -45,7 +46,11 @@ class LocalWorker:
         logger.info("worker_starting", worker_id=self._worker_id)
         while self._running:
             async with self._session_factory() as session:
-                queue = SqlAlchemyJobQueue(session, SqlAlchemyJobRepository(session))
+                queue = SqlAlchemyJobQueue(
+                    session,
+                    SqlAlchemyJobRepository(session),
+                    self._settings,
+                )
                 repository = SqlAlchemyJobRepository(session)
                 evidence = SqlAlchemyEvidenceRepository(session)
 
@@ -107,7 +112,11 @@ class LocalWorker:
         while True:
             await asyncio.sleep(self._lease_seconds / 2)
             async with self._session_factory() as session:
-                hb_queue = SqlAlchemyJobQueue(session, SqlAlchemyJobRepository(session))
+                hb_queue = SqlAlchemyJobQueue(
+                    session,
+                    SqlAlchemyJobRepository(session),
+                    self._settings,
+                )
                 ok = await hb_queue.heartbeat(
                     job_id, self._worker_id, lease_seconds=self._lease_seconds
                 )
