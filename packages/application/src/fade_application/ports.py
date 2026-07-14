@@ -7,8 +7,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from fade_domain.ids import ProjectId
+from fade_domain.evidence import EvidenceEvent
+from fade_domain.goal import Goal
+from fade_domain.ids import GoalId, JobId, PlanId, ProfileId, ProjectId
+from fade_domain.job import Job, JobState
+from fade_domain.plan import Plan, PlanStatus
 from fade_domain.project import PreflightReport, Project, ProjectStatus
+from fade_domain.project_profile import ProjectProfile, SymbolEntry
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,3 +108,117 @@ class PreflightPort(ABC):
     @abstractmethod
     async def run(self, project: Project, *, require_git: bool = True) -> PreflightReport:
         """Run preflight pipeline on project source."""
+
+
+class ProjectAnalysisPort(ABC):
+    """Port for project source analysis."""
+
+    @abstractmethod
+    async def analyze(self, project: Project) -> ProjectProfile:
+        """Run analysis and persist profile."""
+
+    @abstractmethod
+    async def get_latest_profile(self, project_id: ProjectId) -> ProjectProfile | None:
+        """Get latest profile for project."""
+
+    @abstractmethod
+    async def list_symbols(
+        self,
+        project_id: ProjectId,
+        *,
+        query: str | None = None,
+        limit: int = 100,
+    ) -> list[SymbolEntry]:
+        """List indexed symbols for project."""
+
+
+class JobRepositoryPort(ABC):
+    """Port for job persistence."""
+
+    @abstractmethod
+    async def create(self, job: Job) -> Job:
+        """Persist new job."""
+
+    @abstractmethod
+    async def get_by_id(self, job_id: JobId) -> Job | None:
+        """Get job by ID."""
+
+    @abstractmethod
+    async def update(self, job: Job) -> Job:
+        """Update job record."""
+
+    @abstractmethod
+    async def list_by_project(self, project_id: ProjectId) -> list[Job]:
+        """List jobs for a project."""
+
+
+class JobQueuePort(ABC):
+    """Port for durable job queue operations."""
+
+    @abstractmethod
+    async def claim_next(self, worker_id: str, *, lease_seconds: int = 60) -> Job | None:
+        """Claim next queued job for worker."""
+
+    @abstractmethod
+    async def heartbeat(self, job_id: JobId, worker_id: str, *, lease_seconds: int = 60) -> bool:
+        """Renew job lease."""
+
+    @abstractmethod
+    async def release_stale(self, *, grace_seconds: int = 120) -> int:
+        """Requeue jobs with expired leases. Returns count affected."""
+
+
+class EvidencePort(ABC):
+    """Port for evidence ledger persistence."""
+
+    @abstractmethod
+    async def append(self, event: EvidenceEvent) -> EvidenceEvent:
+        """Append event to ledger."""
+
+    @abstractmethod
+    async def list_for_job(self, job_id: JobId) -> list[EvidenceEvent]:
+        """List events for a job in sequence order."""
+
+    @abstractmethod
+    async def list_since(self, job_id: JobId, after_sequence: int) -> list[EvidenceEvent]:
+        """List events after sequence for SSE streaming."""
+
+
+class GoalRepositoryPort(ABC):
+    """Port for goal persistence."""
+
+    @abstractmethod
+    async def create(self, goal: Goal) -> Goal:
+        """Persist goal."""
+
+    @abstractmethod
+    async def get_by_id(self, goal_id: GoalId) -> Goal | None:
+        """Get goal by ID."""
+
+    @abstractmethod
+    async def list_by_project(self, project_id: ProjectId) -> list[Goal]:
+        """List goals for project."""
+
+    @abstractmethod
+    async def update(self, goal: Goal) -> Goal:
+        """Update goal."""
+
+
+class PlanRepositoryPort(ABC):
+    """Port for plan persistence."""
+
+    @abstractmethod
+    async def create(self, plan: Plan) -> Plan:
+        """Persist plan."""
+
+    @abstractmethod
+    async def get_by_id(self, plan_id: PlanId) -> Plan | None:
+        """Get plan by ID."""
+
+    @abstractmethod
+    async def list_by_goal(self, goal_id: GoalId) -> list[Plan]:
+        """List plans for goal."""
+
+    @abstractmethod
+    async def update_status(self, plan_id: PlanId, status: PlanStatus) -> Plan | None:
+        """Update plan status."""

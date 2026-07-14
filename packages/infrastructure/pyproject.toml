@@ -9,6 +9,13 @@ requires-python = ">=3.12"
 dependencies = [
     "fade-application",
     "fade-domain",
+    "fade-evidence",
+    "fade-project-analysis",
+    "fade-model-router",
+    "fade-planning",
+    "fade-tool-gateway",
+    "fade-patch-engine",
+    "fade-guardian",
     "sqlalchemy[asyncio]>=2.0.36",
     "aiosqlite>=0.20.0",
     "pydantic-settings>=2.6.0",
@@ -21,3 +28,10 @@ packages = ["src/fade_infrastructure"]
 [tool.uv.sources]
 fade-domain = { workspace = true }
 fade-application = { workspace = true }
+fade-tool-gateway = { workspace = true }
+fade-patch-engine = { workspace = true }
+fade-guardian = { workspace = true }
+fade-evidence = { workspace = true }
+fade-project-analysis = { workspace = true }
+fade-model-router = { workspace = true }
+fade-planning = { workspace = true }

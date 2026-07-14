@@ -44,12 +44,24 @@ Otevřete http://localhost:5173 pro dashboard. API běží na http://127.0.0.1:8
 ./scripts/test.sh      # Všechny testy, lint, build
 ```
 
-## API endpointy (Milestone 0)
+## API endpointy
+
+### System (M0)
 
 | Endpoint | Popis |
 |----------|-------|
 | `GET /api/v1/system/health` | Stav platformy, databáze, capabilities |
 | `GET /api/v1/system/doctor` | Rozšířená diagnostika s issues |
+
+### Projects (M1)
+
+| Endpoint | Popis |
+|----------|-------|
+| `GET /api/v1/projects` | Seznam registrovaných projektů |
+| `POST /api/v1/projects` | Registrace + preflight |
+| `GET /api/v1/projects/{id}` | Detail projektu |
+| `PATCH /api/v1/projects/{id}` | Aktualizace metadat |
+| `POST /api/v1/projects/{id}/archive` | Archivace projektu |
 
 ## Architektura
 

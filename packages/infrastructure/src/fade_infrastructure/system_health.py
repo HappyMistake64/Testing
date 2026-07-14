@@ -37,12 +37,12 @@ class SystemHealthService(SystemHealthPort):
 
         capabilities = {
             "project_registry": True,
-            "project_analysis": False,
+            "project_analysis": True,
             "agent_runtime": False,
             "tool_gateway": False,
-            "model_router": False,
-            "evidence_ledger": False,
-            "job_queue": False,
+            "model_router": True,
+            "evidence_ledger": True,
+            "job_queue": True,
             "workspace_isolation": False,
         }
 
@@ -108,10 +108,11 @@ class SystemHealthService(SystemHealthPort):
             "issues": issues,
             "capabilities": {
                 "project_registry": True,
-                "project_analysis": False,
+                "project_analysis": True,
                 "agent_runtime": False,
                 "tool_gateway": False,
-                "model_router": False,
-                "evidence_ledger": False,
+                "model_router": True,
+                "evidence_ledger": True,
+                "job_queue": True,
             },
         }

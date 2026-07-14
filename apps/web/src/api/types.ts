@@ -1,4 +1,5 @@
-/** Stable API error codes matching backend domain types. */
+/** Extended API types for M2-M9 endpoints. */
+
 export type ErrorCode =
   | "INTERNAL_ERROR"
   | "VALIDATION_ERROR"
@@ -53,6 +54,7 @@ export interface DoctorResponse {
   checks: Record<string, unknown>;
   issues: DoctorIssue[];
   capabilities: Record<string, boolean>;
+  resource_budgets?: Record<string, number>;
 }
 
 export interface PreflightIssue {
@@ -108,4 +110,151 @@ export interface RegisterProjectRequest {
   source_path: string;
   tags?: string[];
   require_git?: boolean;
+}
+
+export interface HealthComponent {
+  name: string;
+  status: string;
+  message: string;
+  evidence?: Record<string, unknown>;
+}
+
+export interface ProjectHealthResponse {
+  project_id: string;
+  components: HealthComponent[];
+}
+
+export interface ProjectProfile {
+  id: string;
+  project_id: string;
+  version: number;
+  revision: string | null;
+  languages: string[];
+  frameworks: string[];
+  commands: Record<string, string>;
+  file_count: number;
+  symbol_count: number;
+  created_at: string;
+}
+
+export interface SymbolInfo {
+  name: string;
+  kind: string;
+  line: number;
+}
+
+export interface ExplorerNode {
+  path: string;
+  is_dir: boolean;
+  size_bytes?: number;
+  symbols: SymbolInfo[];
+  children: ExplorerNode[];
+}
+
+export interface ExplorerResponse {
+  project_id: string;
+  root: ExplorerNode;
+}
+
+export interface Goal {
+  id: string;
+  project_id: string;
+  title: string;
+  intent: string;
+  constraints: string[];
+  priority: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoalListResponse {
+  items: Goal[];
+}
+
+export interface CreateGoalRequest {
+  title: string;
+  intent: string;
+  constraints?: string[];
+  acceptance_criteria?: string[];
+  priority?: string;
+}
+
+export interface PlanStep {
+  ordinal: number;
+  title: string;
+  description: string;
+  step_type: string;
+  acceptance_criteria: string[];
+}
+
+export interface Plan {
+  id: string;
+  goal_id: string;
+  version: number;
+  status: string;
+  assumptions: string[];
+  steps: PlanStep[];
+  test_plan: string[];
+  risk_level: string;
+  model_id: string | null;
+  created_at: string;
+  approved_at: string | null;
+}
+
+export interface Job {
+  id: string;
+  project_id: string;
+  job_type: string;
+  state: string;
+  autonomy_level: string;
+  payload: Record<string, unknown>;
+  worker_id: string | null;
+  lease_expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JobEvent {
+  id: string;
+  sequence: number;
+  event_type: string;
+  payload_json: string;
+  payload_hash: string;
+  previous_event_hash: string | null;
+  event_hash: string;
+  timestamp: string;
+}
+
+export interface DiffFile {
+  path: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  patch: string;
+}
+
+export interface DiffResponse {
+  job_id: string;
+  base_revision: string;
+  files: DiffFile[];
+  review_status: string;
+  findings: Array<Record<string, unknown>>;
+}
+
+export interface Policy {
+  id: string;
+  scope_type: string;
+  scope_id: string | null;
+  rule_type: string;
+  effect: string;
+  parameters: Record<string, unknown>;
+  version: number;
+  enabled: boolean;
+  created_at: string | null;
+}
+
+export interface PolicyListResponse {
+  items: Policy[];
+  total: number;
 }

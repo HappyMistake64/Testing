@@ -1,10 +1,20 @@
 import type {
+  CreateGoalRequest,
+  DiffResponse,
   DoctorResponse,
   ErrorResponse,
+  ExplorerResponse,
+  Goal,
+  GoalListResponse,
   HealthResponse,
+  Job,
+  Plan,
+  PolicyListResponse,
   PreflightReport,
   Project,
+  ProjectHealthResponse,
   ProjectListResponse,
+  ProjectProfile,
   RegisterProjectRequest,
 } from "./types";
 
@@ -69,6 +79,53 @@ export const projectsApi = {
     }),
   archive: (id: string) =>
     request<Project>(`/api/v1/projects/${id}/archive`, { method: "POST" }),
+  analyze: (id: string) =>
+    request<ProjectProfile>(`/api/v1/projects/${id}/analyze`, { method: "POST" }),
+  profile: (id: string) =>
+    request<ProjectProfile>(`/api/v1/projects/${id}/profile`),
+  health: (id: string) =>
+    request<ProjectHealthResponse>(`/api/v1/projects/${id}/health`),
+  explorer: (id: string, q?: string) => {
+    const params = q ? `?q=${encodeURIComponent(q)}` : "";
+    return request<ExplorerResponse>(`/api/v1/projects/${id}/explorer${params}`);
+  },
+  goals: {
+    list: (id: string) =>
+      request<GoalListResponse>(`/api/v1/projects/${id}/goals`),
+    create: (id: string, body: CreateGoalRequest) =>
+      request<Goal>(`/api/v1/projects/${id}/goals`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+  },
+};
+
+export const plansApi = {
+  propose: (goalId: string) =>
+    request<Plan>(`/api/v1/plans?goal_id=${encodeURIComponent(goalId)}`, {
+      method: "POST",
+    }),
+  approve: (planId: string) =>
+    request<Plan>(`/api/v1/plans/${planId}/approve`, { method: "POST" }),
+  createJob: (planId: string) =>
+    request<Job>(`/api/v1/plans/${planId}/jobs`, { method: "POST" }),
+};
+
+export const jobsApi = {
+  get: (jobId: string) => request<Job>(`/api/v1/jobs/${jobId}`),
+  pause: (jobId: string) =>
+    request<Job>(`/api/v1/jobs/${jobId}/pause`, { method: "POST" }),
+  resume: (jobId: string) =>
+    request<Job>(`/api/v1/jobs/${jobId}/resume`, { method: "POST" }),
+  cancel: (jobId: string) =>
+    request<Job>(`/api/v1/jobs/${jobId}/cancel`, { method: "POST" }),
+  eventsStreamUrl: (jobId: string, after = 0) =>
+    `${API_BASE}/api/v1/jobs/${jobId}/events?after=${after}`,
+  diff: (jobId: string) => request<DiffResponse>(`/api/v1/jobs/${jobId}/diff`),
+};
+
+export const policiesApi = {
+  list: () => request<PolicyListResponse>("/api/v1/policies"),
 };
 
 export type { Project, ProjectListResponse, PreflightReport, RegisterProjectRequest };

@@ -15,6 +15,9 @@ export function Layout() {
           <NavLink to="/projects/new" className={({ isActive }) => (isActive ? "active" : "")}>
             Add Project
           </NavLink>
+          <NavLink to="/settings/policies" className={({ isActive }) => (isActive ? "active" : "")}>
+            Guardian Policies
+          </NavLink>
           <NavLink to="/system" className={({ isActive }) => (isActive ? "active" : "")}>
             System Status
           </NavLink>

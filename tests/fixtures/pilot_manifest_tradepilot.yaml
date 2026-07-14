@@ -1,0 +1,15 @@
+schema_version: 1
+project:
+  name: tradepilot-pilot
+  profile: python_web_financial
+autonomy_default: assisted
+commands:
+  test: uv run pytest
+verification:
+  required:
+    - test
+policies:
+  production_trading: deny
+  paper_trading: allow_within_manifest
+  external_side_effects: require_critical_approval
+notes: "Paper/simulation mode only — no live trading."

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fade-project-analysis"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["fade-domain"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fade_project_analysis"]
+
+[tool.uv.sources]
+fade-domain = { workspace = true }
