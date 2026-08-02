@@ -47,7 +47,9 @@ def _settings(tmp_path) -> Settings:
     )
 
 
-async def _make_turn(repo: SqlAlchemyAssistantRepository) -> AssistantTurn:
+async def _make_turn(
+    repo: SqlAlchemyAssistantRepository, *, command: str = "test"
+) -> AssistantTurn:
     now = datetime.now(UTC)
     session = AssistantSession(
         id=AssistantSessionId.generate(),
@@ -61,7 +63,7 @@ async def _make_turn(repo: SqlAlchemyAssistantRepository) -> AssistantTurn:
     turn = AssistantTurn(
         id=AssistantTurnId.generate(),
         session_id=session.id,
-        command="test",
+        command=command,
         mode=CommandMode.EXECUTE,
         state=TurnState.QUEUED,
         provider_id=None,
@@ -283,6 +285,57 @@ class TestApprovals:
                     repository=repo,
                     memory=memory,
                 )
+
+
+# ---------------------------------------------------------------------------
+# Turn claim (duplicate execution guard)
+# ---------------------------------------------------------------------------
+
+
+class TestTurnClaim:
+    def _orchestrator(self, session_factory, tmp_path):
+        from fade_agent_runtime.assistant_orchestrator import AssistantOrchestrator
+        from fade_model_router.router import ModelRouter
+        from fade_model_router.stub_adapter import StubModelAdapter
+
+        return AssistantOrchestrator(
+            _settings(tmp_path),
+            session_factory,
+            ModelRouter([StubModelAdapter()]),
+        )
+
+    @pytest.mark.asyncio
+    async def test_running_turn_is_not_executed_again(self, session_factory, tmp_path) -> None:
+        orchestrator = self._orchestrator(session_factory, tmp_path)
+        async with session_factory() as session:
+            repo = SqlAlchemyAssistantRepository(session)
+            turn = await _make_turn(repo, command="turn on light.office")
+            await repo.update_turn(turn.id, state=TurnState.RUNNING)
+
+        state = await orchestrator.execute_turn(turn.id)
+        assert state == TurnState.RUNNING
+
+        async with session_factory() as session:
+            repo = SqlAlchemyAssistantRepository(session)
+            assert await repo.list_pending_approvals() == []
+
+    @pytest.mark.asyncio
+    async def test_double_execution_creates_single_approval(
+        self, session_factory, tmp_path
+    ) -> None:
+        orchestrator = self._orchestrator(session_factory, tmp_path)
+        async with session_factory() as session:
+            repo = SqlAlchemyAssistantRepository(session)
+            turn = await _make_turn(repo, command="turn on light.office")
+
+        first = await orchestrator.execute_turn(turn.id)
+        second = await orchestrator.execute_turn(turn.id)
+        assert first == TurnState.AWAITING_APPROVAL
+        assert second == TurnState.AWAITING_APPROVAL
+
+        async with session_factory() as session:
+            repo = SqlAlchemyAssistantRepository(session)
+            assert len(await repo.list_pending_approvals()) == 1
 
 
 # ---------------------------------------------------------------------------

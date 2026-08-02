@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -117,10 +118,21 @@ class AgentRuntimeOrchestrator:
         from fade_domain.assistant import TurnState
         from fade_domain.ids import AssistantTurnId
 
+        turn_id = AssistantTurnId.from_string(str(turn_id_raw))
         state = await self._assistant.execute_turn(  # type: ignore[attr-defined]
-            AssistantTurnId.from_string(str(turn_id_raw)),
+            turn_id,
             worker_id=worker_id,
         )
+
+        # If an inline API execution owns the turn, wait for it to finish.
+        waited = 0.0
+        while state == TurnState.RUNNING and waited < 60.0:
+            await asyncio.sleep(0.5)
+            waited += 0.5
+            state = await self._assistant.execute_turn(  # type: ignore[attr-defined]
+                turn_id,
+                worker_id=worker_id,
+            )
 
         if state == TurnState.COMPLETED:
             return await self._complete_job(

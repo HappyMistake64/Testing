@@ -88,7 +88,10 @@ class AssistantOrchestrator:
                 )
                 return TurnState.FAILED
 
-            await repository.update_turn(turn_id, state=TurnState.RUNNING)
+            if not await repository.try_begin_turn(turn_id):
+                # Another executor (inline API or worker) already owns this turn.
+                current = await repository.get_turn(turn_id)
+                return current.state if current else TurnState.FAILED
             await self._record(
                 evidence, job_id, "ASSISTANT_TURN_STARTED",
                 {"turn_id": str(turn_id), "command": turn.command[:200]},
@@ -97,7 +100,7 @@ class AssistantOrchestrator:
 
             intent = interpret(turn.command)
 
-            if intent.kind == "answer" or turn.mode == CommandMode.ANSWER and not intent.tool_calls:
+            if intent.kind == "answer" or turn.mode == CommandMode.ANSWER:
                 return await self._answer(
                     repository, evidence, memory, turn_id, turn, job_id, worker_id
                 )

@@ -92,6 +92,23 @@ class SqlAlchemyAssistantRepository:
         )
         return [_turn_from_model(m) for m in result.scalars().all()]
 
+    async def try_begin_turn(self, turn_id: AssistantTurnId) -> bool:
+        """Atomically claim a queued turn for execution.
+
+        Prevents duplicate execution (and duplicate approval requests) when an
+        inline API execution races with the durable worker.
+        """
+        result = await self._session.execute(
+            update(AssistantTurnModel)
+            .where(
+                AssistantTurnModel.id == str(turn_id),
+                AssistantTurnModel.state == TurnState.QUEUED.value,
+            )
+            .values(state=TurnState.RUNNING.value, updated_at=datetime.now(UTC))
+        )
+        await self._session.commit()
+        return bool(result.rowcount)
+
     async def update_turn(
         self,
         turn_id: AssistantTurnId,
