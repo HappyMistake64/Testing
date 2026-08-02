@@ -24,7 +24,8 @@ class TestGuardian:
 
     def test_secret_store_detects_api_key(self) -> None:
         store = SecretStore()
-        assert store.contains_secret("key=sk-abcdefghijklmnopqrstuvwxyz123456")
+        key = "sk-" + "a" * 24
+        assert store.contains_secret("key=" + key)
 
     def test_effective_policy_for_project(self) -> None:
         resolver = PolicyResolver(PolicyResolver.default_global_rules())
