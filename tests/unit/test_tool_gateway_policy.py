@@ -14,7 +14,8 @@ def workspace(tmp_path: Path) -> Path:
     root = tmp_path / "ws"
     root.mkdir()
     (root / "README.md").write_text("hello\n", encoding="utf-8")
-    (root / ".env").write_text("SECRET=sk-abcdefghijklmnopqrstuvwxyz123456\n", encoding="utf-8")
+    key = "sk-" + "a" * 24
+    (root / ".env").write_text(f"SECRET={key}\n", encoding="utf-8")
     (root / "subdir").mkdir()
     (root / "subdir" / "app.py").write_text("print('ok')\n", encoding="utf-8")
     return root
