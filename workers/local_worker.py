@@ -8,14 +8,21 @@ import signal
 import uuid
 from datetime import UTC, datetime
 
+from fade_agent_runtime.assistant_orchestrator import AssistantOrchestrator
 from fade_agent_runtime.orchestrator import AgentRuntimeOrchestrator
+from fade_application.assistant import AssistantService
+from fade_domain.assistant import CommandMode
 from fade_domain.job import JobState
 from fade_evidence.ledger import EvidenceLedger
+from fade_infrastructure.assistant_repository import SqlAlchemyAssistantRepository
+from fade_infrastructure.automation_repository import SqlAlchemyAutomationRepository
 from fade_infrastructure.database import create_engine, create_session_factory
 from fade_infrastructure.evidence_repository import SqlAlchemyEvidenceRepository
 from fade_infrastructure.job_queue import SqlAlchemyJobQueue
 from fade_infrastructure.job_repository import SqlAlchemyJobRepository
 from fade_infrastructure.logging import configure_logging, get_logger
+from fade_infrastructure.memory_repository import SqlAlchemyMemoryRepository
+from fade_infrastructure.project_repository import SqlAlchemyProjectRepository
 from fade_infrastructure.settings import get_settings
 from fade_model_router.router import create_default_router
 
@@ -53,6 +60,12 @@ class LocalWorker:
             self._session_factory,
             self._model_router,
         )
+        self._assistant = AssistantOrchestrator(
+            settings,
+            self._session_factory,
+            self._model_router,
+        )
+        self._orchestrator.attach_assistant(self._assistant)
 
     async def run(self) -> None:
         logger.info("worker_starting", worker_id=self._worker_id)
@@ -65,6 +78,8 @@ class LocalWorker:
                 released = await queue.release_stale()
                 if released:
                     logger.info("worker_released_stale_jobs", count=released)
+
+                await self._schedule_due_automations(session)
 
                 job = await queue.claim_next(self._worker_id, lease_seconds=self._lease_seconds)
                 if job is None:
@@ -95,6 +110,35 @@ class LocalWorker:
 
         await self._engine.dispose()
         logger.info("worker_stopped", worker_id=self._worker_id)
+
+    async def _schedule_due_automations(self, session) -> None:
+        """Turn due user-created automations into assistant turn jobs."""
+        assistant_repo = SqlAlchemyAssistantRepository(session)
+        if await assistant_repo.is_paused():
+            return
+        automations = SqlAlchemyAutomationRepository(session)
+        due = await automations.claim_due()
+        if not due:
+            return
+        service = AssistantService(
+            repository=assistant_repo,
+            memory=SqlAlchemyMemoryRepository(session),
+            jobs=SqlAlchemyJobRepository(session),
+            projects=SqlAlchemyProjectRepository(session),
+            automations=automations,
+        )
+        automation_session = await service.ensure_automation_session()
+        for automation in due:
+            turn = await service.create_turn(
+                automation_session.id,
+                command=automation.command,
+                mode=CommandMode.EXECUTE,
+            )
+            logger.info(
+                "worker_automation_triggered",
+                automation_id=automation.id,
+                turn_id=str(turn.id),
+            )
 
     async def _record_event(self, evidence, job, event_type: str, payload: dict) -> None:
         events = await evidence.list_for_job(job.id)

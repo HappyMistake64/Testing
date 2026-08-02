@@ -406,6 +406,198 @@
   color: var(--color-error);
 }
 
+/* Assistant page */
+.assistant-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.assistant-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 480px;
+}
+
+.assistant-chat__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.assistant-chat__controls {
+  display: flex;
+  gap: 8px;
+}
+
+.assistant-chat__messages {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.assistant-turn__command,
+.assistant-turn__response {
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.assistant-turn__command {
+  background: rgba(59, 130, 246, 0.12);
+  margin-bottom: 4px;
+}
+
+.assistant-turn__response {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.assistant-turn__response--failed {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.assistant-turn__response--awaiting_approval {
+  background: rgba(245, 158, 11, 0.14);
+}
+
+.assistant-turn__role {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 2px;
+}
+
+.assistant-chat__composer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.assistant-chat__composer input {
+  flex: 1;
+}
+
+.assistant-voice-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.assistant-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.banner {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.banner--danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.approval-item,
+.automation-list li,
+.memory-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.memory-list li {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.memory-list,
+.automation-list,
+.tool-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.tool-list li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.approval-item__args {
+  font-size: 12px;
+  opacity: 0.8;
+  overflow-wrap: anywhere;
+}
+
+.approval-item__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-form input {
+  flex: 1;
+}
+
+.automation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.automation-form__row {
+  display: flex;
+  gap: 8px;
+}
+
+.status-badge--completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.status-badge--queued,
+.status-badge--running {
+  background: rgba(59, 130, 246, 0.15);
+  color: #2563eb;
+}
+
+.status-badge--awaiting_approval {
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+}
+
+.page-subtitle {
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
 .button-row {
   display: flex;
   gap: 0.5rem;

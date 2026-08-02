@@ -88,6 +88,16 @@ class StubModelAdapter(ModelProviderPort):
         temperature: float = 0.2,
     ) -> ModelCompletion:
         prompt = system_prompt.lower()
+        if "personal assistant" in prompt:
+            return ModelCompletion(
+                provider_id=self.provider_id,
+                model_id="stub-assistant",
+                content=(
+                    "Offline stub answer. Configure Ollama or a cloud provider "
+                    "for real conversational answers."
+                ),
+                raw={"stub": True, "user_prompt": user_prompt[:200]},
+            )
         if "implementation agent" in prompt or "repair agent" in prompt:
             payload = _STUB_IMPLEMENTATION
             model_name = "stub-implementer"

@@ -80,6 +80,41 @@ These decisions are accepted for the first implementation. Change requires a new
 
 **Reason:** Focus scope on project orchestration and security boundaries. Internal actor fields remain future-ready.
 
+## ADR-013 Command-driven personal agent extension
+
+**Decision:** FADE may expose a single-user, JARVIS-style personal-agent surface for
+explicit user commands. The assistant is local-first, uses Ollama by default, and may
+use configured cloud providers only after the user selects them explicitly.
+
+**Reason:** The existing governed job, evidence, workspace and verification boundaries
+are suitable foundations for a practical personal assistant without permitting
+unbounded autonomous behavior.
+
+**Security consequences:** Every side effect must be tied to a durable command ID and
+must pass Guardian policy and the Tool Gateway. Read-only actions may be allowlisted.
+Writes, network mutations, device control, browser submission, commits, PRs, spending
+and production operations require an explicit approval matching the exact normalized
+tool arguments. User-created reminders are allowed, but no unscheduled side effects or
+model-created automations are permitted.
+
+**Data consequences:** Conversation memory is local SQLite data. Durable memory must
+record provenance and confidence; secrets, unredacted tool output, microphone data and
+camera frames are not retained by default.
+
+## ADR-014 Pluggable personal-agent adapters
+
+**Decision:** Voice, vision, browser/computer use, calendar, email, notifications and
+Home Assistant are adapter ports within the modular monolith. They use typed schemas,
+Tool Gateway network allowlists and test doubles; Home Assistant is the only supported
+smart-home gateway in the first implementation.
+
+**Reason:** It enables incremental, testable capabilities without granting arbitrary
+LAN access or coupling FADE to a cloud provider.
+
+**Consequences:** External accounts and devices remain unavailable until the owner
+configures scoped credentials and explicit allowlists. Real credentials are supplied
+only through environment/secret storage and never committed or included in model context.
+
 ## ADR proposal template
 
 ```markdown

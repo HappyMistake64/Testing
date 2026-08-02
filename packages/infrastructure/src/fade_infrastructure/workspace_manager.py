@@ -28,7 +28,9 @@ class WorkspaceManager:
     """Creates and manages isolated workspaces."""
 
     def __init__(self, workspaces_root: Path, *, lease_ttl_seconds: int = 3600) -> None:
-        self._root = workspaces_root
+        # Resolve to an absolute path: workspace paths are passed to git commands
+        # running with a different cwd (e.g. `git worktree add` in the source repo).
+        self._root = workspaces_root.resolve()
         self._root.mkdir(parents=True, exist_ok=True)
         self._lease_ttl_seconds = lease_ttl_seconds
 
@@ -119,10 +121,17 @@ class WorkspaceManager:
         branch: str | None,
     ) -> tuple[WorkspaceStrategy, Path, str | None]:
         worktree_path = dest / "repo"
-        worktree_branch = branch or f"fade-ws-{secrets.token_hex(4)}"
+        # Always use a unique worktree branch: reusing the source's checked-out
+        # branch (e.g. "main") makes `git worktree add` fail.
+        worktree_branch = f"fade-ws-{secrets.token_hex(4)}"
         try:
-            result = git_worktree_add(source_path, worktree_path, worktree_branch)
-            if result.base_revision is None and result.stderr:
+            result = git_worktree_add(
+                source_path,
+                worktree_path,
+                worktree_branch,
+                start_point=branch,
+            )
+            if result.base_revision is None:
                 raise WorkspaceManagerError("WORKTREE_FAILED", result.stderr)
             return WorkspaceStrategy.GIT_WORKTREE, worktree_path, result.base_revision
         except (WorkspaceManagerError, OSError):

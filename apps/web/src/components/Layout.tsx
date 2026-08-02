@@ -12,6 +12,9 @@ export function Layout() {
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Portfolio
           </NavLink>
+          <NavLink to="/assistant" className={({ isActive }) => (isActive ? "active" : "")}>
+            Assistant
+          </NavLink>
           <NavLink to="/projects/new" className={({ isActive }) => (isActive ? "active" : "")}>
             Add Project
           </NavLink>

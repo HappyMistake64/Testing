@@ -1,5 +1,11 @@
 import type {
   ApplyDiffResponse,
+  AssistantApproval,
+  AssistantAutomation,
+  AssistantMemory,
+  AssistantSession,
+  AssistantStatus,
+  AssistantTurn,
   CreateGoalRequest,
   DiffResponse,
   DoctorResponse,
@@ -136,6 +142,84 @@ export const jobsApi = {
 
 export const policiesApi = {
   list: () => request<PolicyListResponse>("/api/v1/policies"),
+};
+
+export const assistantApi = {
+  status: () => request<AssistantStatus>("/api/v1/assistant/status"),
+  emergencyStop: (paused: boolean, reason = "") =>
+    request<{ paused: boolean; revoked_approvals: number }>(
+      "/api/v1/assistant/emergency-stop",
+      { method: "POST", body: JSON.stringify({ paused, reason }) },
+    ),
+  sessions: {
+    list: () => request<AssistantSession[]>("/api/v1/assistant/sessions"),
+    create: (title = "") =>
+      request<AssistantSession>("/api/v1/assistant/sessions", {
+        method: "POST",
+        body: JSON.stringify({ title }),
+      }),
+  },
+  turns: {
+    list: (sessionId: string) =>
+      request<AssistantTurn[]>(`/api/v1/assistant/sessions/${sessionId}/turns`),
+    create: (sessionId: string, command: string, mode = "execute") =>
+      request<AssistantTurn>(`/api/v1/assistant/sessions/${sessionId}/turns`, {
+        method: "POST",
+        body: JSON.stringify({ command, mode }),
+      }),
+    get: (turnId: string) => request<AssistantTurn>(`/api/v1/assistant/turns/${turnId}`),
+    execute: (turnId: string) =>
+      request<AssistantTurn>(`/api/v1/assistant/turns/${turnId}/execute`, {
+        method: "POST",
+      }),
+  },
+  approvals: {
+    list: () => request<AssistantApproval[]>("/api/v1/assistant/approvals"),
+    approve: (approvalId: string) =>
+      request<{ approval_id: string; turn_id: string; decision: string; turn_requeued: boolean }>(
+        `/api/v1/assistant/approvals/${approvalId}/approve`,
+        { method: "POST" },
+      ),
+    deny: (approvalId: string) =>
+      request<{ approval_id: string; turn_id: string; decision: string; turn_requeued: boolean }>(
+        `/api/v1/assistant/approvals/${approvalId}/deny`,
+        { method: "POST" },
+      ),
+  },
+  memory: {
+    list: (query?: string) =>
+      request<AssistantMemory[]>(
+        `/api/v1/assistant/memory${query ? `?query=${encodeURIComponent(query)}` : ""}`,
+      ),
+    store: (content: string) =>
+      request<AssistantMemory>("/api/v1/assistant/memory", {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      }),
+    remove: (memoryId: string) =>
+      request<void>(`/api/v1/assistant/memory/${memoryId}`, { method: "DELETE" }),
+  },
+  automations: {
+    list: () => request<AssistantAutomation[]>("/api/v1/assistant/automations"),
+    create: (body: {
+      name: string;
+      command: string;
+      schedule_kind: string;
+      interval_seconds?: number | null;
+      delay_seconds?: number | null;
+    }) =>
+      request<AssistantAutomation>("/api/v1/assistant/automations", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    toggle: (automationId: string) =>
+      request<AssistantAutomation>(
+        `/api/v1/assistant/automations/${automationId}/toggle`,
+        { method: "POST" },
+      ),
+    remove: (automationId: string) =>
+      request<void>(`/api/v1/assistant/automations/${automationId}`, { method: "DELETE" }),
+  },
 };
 
 export type { Project, ProjectListResponse, PreflightReport, RegisterProjectRequest };

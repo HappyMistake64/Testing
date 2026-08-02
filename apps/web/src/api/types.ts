@@ -291,3 +291,65 @@ export interface PolicyListResponse {
   items: Policy[];
   total: number;
 }
+
+export interface AssistantSession {
+  id: string;
+  title: string;
+  provider_id: string | null;
+  model_id: string | null;
+  created_at: string | null;
+}
+
+export interface AssistantTurn {
+  id: string;
+  session_id: string;
+  command: string;
+  mode: string;
+  state: string;
+  provider_id: string | null;
+  model_id: string | null;
+  response: string | null;
+  tool_calls: Array<Record<string, unknown>>;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AssistantApproval {
+  id: string;
+  turn_id: string;
+  tool_name: string;
+  capability: string;
+  args_preview: string;
+  created_at: string | null;
+}
+
+export interface AssistantMemory {
+  id: string;
+  content: string;
+  confidence: string;
+  created_at: string | null;
+}
+
+export interface AssistantAutomation {
+  id: string;
+  name: string;
+  command: string;
+  schedule_kind: string;
+  interval_seconds: number | null;
+  next_run_at: string | null;
+  enabled: boolean;
+  last_run_at: string | null;
+}
+
+export interface AssistantToolSpec {
+  name: string;
+  capability: string;
+  description: string;
+  requires_approval: boolean;
+}
+
+export interface AssistantStatus {
+  paused: boolean;
+  tools: AssistantToolSpec[];
+  connectors: Record<string, { provider: string; local: boolean }>;
+}

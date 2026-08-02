@@ -59,12 +59,17 @@ class AgentRuntimeOrchestrator:
         model_router: ModelRouter,
         *,
         repair_loop: RepairLoop | None = None,
+        assistant: object | None = None,
     ) -> None:
         self._settings = settings
         self._session_factory = session_factory
         self._model_router = model_router
         self._workspace_manager = WorkspaceManager(settings.workspaces_dir)
         self._repair_loop = repair_loop or RepairLoop(RepairLoopConfig())
+        self._assistant = assistant
+
+    def attach_assistant(self, assistant: object) -> None:
+        self._assistant = assistant
 
     async def execute_job(self, job_id: JobId, *, worker_id: str = "runtime") -> Job:
         async with self._session_factory() as session:
@@ -80,6 +85,8 @@ class AgentRuntimeOrchestrator:
                 return await self._execute_analyze(repositories, job, worker_id)
             if job.job_type == "implementation":
                 return await self._execute_implementation(repositories, job, worker_id)
+            if job.job_type == "assistant_turn":
+                return await self._execute_assistant_turn(repositories, job, worker_id)
 
             return await self._fail_job(
                 repositories,
@@ -87,6 +94,49 @@ class AgentRuntimeOrchestrator:
                 worker_id,
                 error=f"Unsupported job type: {job.job_type}",
             )
+
+    async def _execute_assistant_turn(
+        self, repositories: _Repositories, job: Job, worker_id: str
+    ) -> Job:
+        if self._assistant is None:
+            return await self._fail_job(
+                repositories, job, worker_id, error="Assistant runtime not attached"
+            )
+
+        turn_id_raw = job.payload.get("turn_id")
+        if turn_id_raw is None:
+            return await self._fail_job(repositories, job, worker_id, error="Missing turn_id")
+
+        job = await self._transition(
+            repositories, job, JobState.PREPARING, "JOB_PREPARING", worker_id
+        )
+        job = await self._transition(
+            repositories, job, JobState.RUNNING, "ASSISTANT_TURN_RUNNING", worker_id
+        )
+
+        from fade_domain.assistant import TurnState
+        from fade_domain.ids import AssistantTurnId
+
+        state = await self._assistant.execute_turn(  # type: ignore[attr-defined]
+            AssistantTurnId.from_string(str(turn_id_raw)),
+            worker_id=worker_id,
+        )
+
+        if state == TurnState.COMPLETED:
+            return await self._complete_job(
+                repositories, job, worker_id, {"turn_id": str(turn_id_raw)}
+            )
+        if state == TurnState.AWAITING_APPROVAL:
+            job = await self._transition(
+                repositories, job, JobState.BLOCKED, "ASSISTANT_AWAITING_APPROVAL", worker_id
+            )
+            return job
+        return await self._fail_job(
+            repositories,
+            job,
+            worker_id,
+            error=f"Assistant turn ended in state {state.value}",
+        )
 
     async def get_job_diff(self, job_id: JobId) -> dict[str, object] | None:
         async with self._session_factory() as session:
