@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { AddProjectPage } from "@/pages/AddProjectPage";
+import { AssistantPage } from "@/pages/AssistantPage";
 import { DiffReviewPage } from "@/pages/DiffReviewPage";
 import { GoalsPlanPage } from "@/pages/GoalsPlanPage";
 import { JobConsolePage } from "@/pages/JobConsolePage";
@@ -30,6 +31,7 @@ createRoot(document.getElementById("root")!).render(
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<PortfolioPage />} />
+            <Route path="assistant" element={<AssistantPage />} />
             <Route path="projects/new" element={<AddProjectPage />} />
             <Route path="projects/:projectId" element={<ProjectOverviewPage />} />
             <Route path="projects/:projectId/explorer" element={<ProjectExplorerPage />} />

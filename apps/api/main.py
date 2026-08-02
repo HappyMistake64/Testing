@@ -12,7 +12,17 @@ from apps.api.errors import (
     validation_exception_handler,
 )
 from apps.api.middleware import CorrelationIdMiddleware
-from apps.api.routers import goals, jobs, patches, plans, policies, projects, system, workspaces
+from apps.api.routers import (
+    assistant,
+    goals,
+    jobs,
+    patches,
+    plans,
+    policies,
+    projects,
+    system,
+    workspaces,
+)
 from fade_infrastructure.logging import configure_logging, get_logger
 from fade_infrastructure.settings import get_settings
 from fastapi import FastAPI
@@ -67,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(workspaces.router, prefix="/api/v1")
     app.include_router(patches.router, prefix="/api/v1")
     app.include_router(policies.router, prefix="/api/v1")
+    app.include_router(assistant.router, prefix="/api/v1")
 
     return app
 

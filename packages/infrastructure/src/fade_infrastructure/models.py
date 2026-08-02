@@ -251,6 +251,155 @@ class WorkspaceModel(Base):
     )
 
 
+class AssistantSessionModel(Base):
+    """Assistant conversation session."""
+
+    __tablename__ = "assistant_sessions"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    title: Mapped[str] = mapped_column(String(512), nullable=False, default="")
+    provider_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    model_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class AssistantTurnModel(Base):
+    """Durable user-issued assistant command."""
+
+    __tablename__ = "assistant_turns"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    session_id: Mapped[str] = mapped_column(String(26), nullable=False, index=True)
+    job_id: Mapped[str | None] = mapped_column(String(26), nullable=True, index=True)
+    command: Mapped[str] = mapped_column(Text, nullable=False)
+    mode: Mapped[str] = mapped_column(String(32), nullable=False, default="answer")
+    state: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    provider_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    model_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tool_calls_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    evidence_refs_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class ToolApprovalModel(Base):
+    """Scoped approval bound to an exact tool call."""
+
+    __tablename__ = "tool_approvals"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    turn_id: Mapped[str] = mapped_column(String(26), nullable=False, index=True)
+    tool_name: Mapped[str] = mapped_column(String(128), nullable=False)
+    normalized_args_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    capability: Mapped[str] = mapped_column(String(32), nullable=False)
+    args_preview: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    decision: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
+    consumed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class MemoryItemModel(Base):
+    """Durable assistant memory with provenance."""
+
+    __tablename__ = "memory_items"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    source_turn_id: Mapped[str | None] = mapped_column(String(26), nullable=True)
+    confidence: Mapped[str] = mapped_column(String(32), nullable=False, default="user_stated")
+    evidence_refs_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class IntegrationAccountModel(Base):
+    """Configured external integration."""
+
+    __tablename__ = "integration_accounts"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="disconnected")
+    scopes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    allow_entities_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+class AutomationModel(Base):
+    """User-created reminder or scheduled command."""
+
+    __tablename__ = "automations"
+
+    id: Mapped[str] = mapped_column(String(26), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    command: Mapped[str] = mapped_column(Text, nullable=False)
+    schedule_kind: Mapped[str] = mapped_column(String(32), nullable=False, default="once")
+    interval_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+
+class AssistantControlModel(Base):
+    """Singleton emergency-stop switch for assistant side effects."""
+
+    __tablename__ = "assistant_controls"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
+    paused: Mapped[bool] = mapped_column(nullable=False, default=False)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
 class PolicyModel(Base):
     """Guardian policy rule."""
 

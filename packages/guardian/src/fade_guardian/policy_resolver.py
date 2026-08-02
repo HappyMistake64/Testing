@@ -25,6 +25,7 @@ DEFAULT_ALLOWED_COMMANDS = [
     "uv",
     "ruff",
     "python",
+    "python3",
     "npm",
     "node",
 ]
@@ -32,9 +33,9 @@ DEFAULT_ALLOWED_COMMANDS = [
 AUTONOMY_COMMAND_MATRIX: dict[AutonomyLevel, set[str]] = {
     AutonomyLevel.READ_ONLY: {"git"},
     AutonomyLevel.PLAN: {"git"},
-    AutonomyLevel.ASSISTED: {"git", "pytest", "ruff", "python", "uv"},
-    AutonomyLevel.SUPERVISED: {"git", "pytest", "ruff", "python", "uv", "npm", "node"},
-    AutonomyLevel.AUTONOMOUS: {"git", "pytest", "ruff", "python", "uv", "npm", "node"},
+    AutonomyLevel.ASSISTED: {"git", "pytest", "ruff", "python", "python3", "uv"},
+    AutonomyLevel.SUPERVISED: {"git", "pytest", "ruff", "python", "python3", "uv", "npm", "node"},
+    AutonomyLevel.AUTONOMOUS: {"git", "pytest", "ruff", "python", "python3", "uv", "npm", "node"},
 }
 
 

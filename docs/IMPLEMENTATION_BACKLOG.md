@@ -189,3 +189,34 @@ A task is complete only after its acceptance tests and evidence are present.
 - [x] Release packaging.
 - [x] Runbooks and troubleshooting.
 - [x] Security and recovery release gate.
+
+# Milestone 10 - Agent Runtime (completed)
+
+- [x] Agent loop with tool-based context gathering.
+- [x] Structured implementation output and patch application.
+- [x] Deterministic verification and repair in isolated workspaces.
+
+# Milestone 11 - Platform completion (completed)
+
+- [x] Diff approve/reject/apply-to-source workflow with promoted files.
+- [x] NeuroString and TradePilot pilot fixtures end-to-end.
+- [x] GitHub Actions CI (backend, frontend, security).
+- [x] Diff review and job console UI with verification detail.
+
+# Milestone 12 - Command-driven personal assistant (ADR-013, ADR-014)
+
+- [x] Assistant domain models: sessions, turns, capabilities, approvals, memory.
+- [x] Migration 008: assistant tables + memory FTS5 index.
+- [x] Typed tool registry with capability classes and exact-args approval binding.
+- [x] Deterministic intent compilation (CZ/EN) with model-answer fallback.
+- [x] Durable assistant turns as jobs; approval recovery re-queues blocked jobs.
+- [x] Emergency stop: pause switch blocks tools and revokes pending approvals.
+- [x] Local connectors (calendar, email, notifications, smart home) with
+      opt-in Home Assistant/webhook adapters behind host allowlists.
+- [x] Durable memory with provenance, expiry, and local FTS retrieval.
+- [x] User-created automations (once/interval) scheduled by the local worker.
+- [x] Voice/vision ports with honest local defaults (browser STT/TTS).
+- [x] Assistant chat UI: approvals, memory, automations, capabilities,
+      emergency stop, voice input/output.
+- [x] Unit + integration test coverage for approvals, memory, automations,
+      turn lifecycle, and API surface.

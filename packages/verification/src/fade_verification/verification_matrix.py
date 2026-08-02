@@ -24,6 +24,7 @@ class VerificationCheck:
     argv: list[str]
     required: bool = True
     timeout_s: int = 120
+    env: dict[str, str] | None = None
 
 
 @dataclass(frozen=True, slots=True)

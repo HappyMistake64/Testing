@@ -5,18 +5,24 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
+from fade_agent_runtime.assistant_orchestrator import AssistantOrchestrator
+from fade_agent_runtime.orchestrator import AgentRuntimeOrchestrator
 from fade_application.analysis import AnalysisService
+from fade_application.assistant import AssistantService
 from fade_application.jobs import JobService
 from fade_application.patches import PatchService
 from fade_application.planning import GoalApplicationService, PlanApplicationService
 from fade_application.policies import PolicyService
 from fade_application.projects import ProjectService
 from fade_application.workspaces import WorkspaceService
+from fade_infrastructure.assistant_repository import SqlAlchemyAssistantRepository
+from fade_infrastructure.automation_repository import SqlAlchemyAutomationRepository
 from fade_infrastructure.database import create_engine, create_session_factory
 from fade_infrastructure.evidence_repository import SqlAlchemyEvidenceRepository
 from fade_infrastructure.goal_repository import SqlAlchemyGoalRepository
 from fade_infrastructure.job_queue import SqlAlchemyJobQueue
 from fade_infrastructure.job_repository import SqlAlchemyJobRepository
+from fade_infrastructure.memory_repository import SqlAlchemyMemoryRepository
 from fade_infrastructure.path_safety import PathSafetyService
 from fade_infrastructure.plan_repository import SqlAlchemyPlanRepository
 from fade_infrastructure.policy_repository import SqlAlchemyPolicyRepository
@@ -50,9 +56,23 @@ class AppState:
             openai_api_key=(
                 settings.openai_api_key.get_secret_value() if settings.openai_api_key else None
             ),
+            ollama_base_url=settings.ollama_base_url,
+            ollama_default_model=settings.ollama_default_model,
             include_stub=settings.env in {"test", "development"},
         )
         self.plan_service = PlanService(self.model_router)
+        self.agent_runtime = AgentRuntimeOrchestrator(
+            settings,
+            self.session_factory,
+            self.model_router,
+            repair_loop=self.repair_loop,
+        )
+        self.assistant_runtime = AssistantOrchestrator(
+            settings,
+            self.session_factory,
+            self.model_router,
+        )
+        self.agent_runtime.attach_assistant(self.assistant_runtime)
 
     def project_service(self, session: AsyncSession) -> ProjectService:
         return ProjectService(
@@ -89,6 +109,15 @@ class AppState:
     def policy_service(self, session: AsyncSession) -> PolicyService:
         return PolicyService(SqlAlchemyPolicyRepository(session))
 
+    def assistant_service(self, session: AsyncSession) -> AssistantService:
+        return AssistantService(
+            repository=SqlAlchemyAssistantRepository(session),
+            memory=SqlAlchemyMemoryRepository(session),
+            jobs=SqlAlchemyJobRepository(session),
+            projects=SqlAlchemyProjectRepository(session),
+            automations=SqlAlchemyAutomationRepository(session),
+        )
+
     def job_queue(self, session: AsyncSession) -> SqlAlchemyJobQueue:
         return SqlAlchemyJobQueue(
             session,
@@ -116,6 +145,12 @@ class AppState:
 
 def get_app_state(request: Request) -> AppState:
     return request.app.state.fade  # type: ignore[attr-defined]
+
+
+def get_agent_runtime(
+    state: Annotated[AppState, Depends(get_app_state)],
+) -> AgentRuntimeOrchestrator:
+    return state.agent_runtime
 
 
 async def get_db_session(
@@ -185,3 +220,16 @@ async def get_patch_service(
     session: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> PatchService:
     return state.patch_service(session)
+
+
+async def get_assistant_service(
+    state: Annotated[AppState, Depends(get_app_state)],
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> AssistantService:
+    return state.assistant_service(session)
+
+
+def get_assistant_runtime(
+    state: Annotated[AppState, Depends(get_app_state)],
+) -> AssistantOrchestrator:
+    return state.assistant_runtime

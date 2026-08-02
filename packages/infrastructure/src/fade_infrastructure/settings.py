@@ -70,6 +70,56 @@ class Settings(BaseSettings):
 
     # Placeholder for future secret store integration
     openai_api_key: SecretStr | None = Field(default=None, description="Optional cloud API key")
+    ollama_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        description="Ollama HTTP API base URL",
+    )
+    ollama_default_model: str = Field(
+        default="llama3.2",
+        description="Default Ollama model id",
+    )
+
+    # Personal assistant (JARVIS-style command agent)
+    assistant_enabled: bool = Field(
+        default=True,
+        description="Enable the command-driven assistant surface",
+    )
+    assistant_approval_ttl_seconds: int = Field(
+        default=900,
+        description="How long a granted tool approval stays valid",
+    )
+    assistant_max_tool_calls_per_turn: int = Field(
+        default=8,
+        description="Hard budget for tool calls in a single assistant turn",
+    )
+    home_assistant_url: str | None = Field(
+        default=None,
+        description="Home Assistant base URL (opt-in smart-home gateway)",
+    )
+    home_assistant_token: SecretStr | None = Field(
+        default=None,
+        description="Home Assistant long-lived access token",
+    )
+    notify_webhook_url: str | None = Field(
+        default=None,
+        description="Optional webhook URL for owner notifications (ntfy/gotify style)",
+    )
+    integration_allowed_hosts_csv: str = Field(
+        default="",
+        description="Comma-separated hostnames integrations may contact",
+    )
+
+    @property
+    def integration_allowed_hosts(self) -> list[str]:
+        hosts = [h.strip() for h in self.integration_allowed_hosts_csv.split(",") if h.strip()]
+        for url in (self.home_assistant_url, self.notify_webhook_url):
+            if url:
+                from urllib.parse import urlparse
+
+                host = urlparse(url).hostname
+                if host and host not in hosts:
+                    hosts.append(host)
+        return hosts
 
     @property
     def var_dir(self) -> Path:

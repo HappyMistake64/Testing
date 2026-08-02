@@ -1,4 +1,4 @@
-"""Deterministic stub provider for tests and offline pilots."""
+"""Offline model adapter returning structured JSON plans and implementations."""
 
 from __future__ import annotations
 
@@ -35,9 +35,37 @@ _STUB_PLAN = {
     "risk_level": "low",
 }
 
+_STUB_IMPLEMENTATION = {
+    "changes": [
+        {
+            "path": "src/pilot_app/main.py",
+            "new_content": (
+                '"""Main entry point for pilot small fixture."""\n\n\n'
+                "def greet(name: str) -> str:\n"
+                '    return f"Hello, {name}! Welcome to FADE."\n\n\n'
+                "def add(a: int, b: int) -> int:\n"
+                "    return a + b\n"
+            ),
+            "reason": "Extend greet() with FADE welcome text",
+        },
+        {
+            "path": "tests/test_main.py",
+            "new_content": (
+                "from pilot_app.main import add, greet\n\n\n"
+                "def test_greet() -> None:\n"
+                '    assert greet("FADE") == "Hello, FADE! Welcome to FADE."\n\n\n'
+                "def test_add() -> None:\n"
+                "    assert add(2, 3) == 5\n"
+            ),
+            "reason": "Update test expectation for greet() change",
+        },
+    ],
+    "summary": "Extend greet() with FADE welcome message",
+}
+
 
 class StubModelAdapter(ModelProviderPort):
-    """Offline model adapter returning structured JSON plans."""
+    """Offline model adapter returning structured JSON for planning and implementation."""
 
     @property
     def provider_id(self) -> str:
@@ -59,9 +87,27 @@ class StubModelAdapter(ModelProviderPort):
         user_prompt: str,
         temperature: float = 0.2,
     ) -> ModelCompletion:
+        prompt = system_prompt.lower()
+        if "personal assistant" in prompt:
+            return ModelCompletion(
+                provider_id=self.provider_id,
+                model_id="stub-assistant",
+                content=(
+                    "Offline stub answer. Configure Ollama or a cloud provider "
+                    "for real conversational answers."
+                ),
+                raw={"stub": True, "user_prompt": user_prompt[:200]},
+            )
+        if "implementation agent" in prompt or "repair agent" in prompt:
+            payload = _STUB_IMPLEMENTATION
+            model_name = "stub-implementer"
+        else:
+            payload = _STUB_PLAN
+            model_name = model_id or "stub-planner"
+
         return ModelCompletion(
             provider_id=self.provider_id,
-            model_id=model_id or "stub-planner",
-            content=json.dumps(_STUB_PLAN),
+            model_id=model_name,
+            content=json.dumps(payload),
             raw={"stub": True, "user_prompt": user_prompt[:200]},
         )

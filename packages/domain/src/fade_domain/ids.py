@@ -69,3 +69,19 @@ class WorkspaceId(_TypedId):
 
 class PolicyId(_TypedId):
     """Unique identifier for a policy rule."""
+
+
+class AssistantSessionId(_TypedId):
+    """Unique identifier for an assistant conversation."""
+
+
+class AssistantTurnId(_TypedId):
+    """Unique identifier for a user-issued assistant command."""
+
+
+class ApprovalId(_TypedId):
+    """Unique identifier for a scoped tool approval."""
+
+
+class MemoryId(_TypedId):
+    """Unique identifier for a durable assistant memory."""

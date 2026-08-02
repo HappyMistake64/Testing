@@ -55,6 +55,12 @@ export interface DoctorResponse {
   issues: DoctorIssue[];
   capabilities: Record<string, boolean>;
   resource_budgets?: Record<string, number>;
+  model_providers?: Array<{
+    provider_id: string;
+    model_id: string;
+    available: boolean;
+    reason?: string | null;
+  }>;
 }
 
 export interface PreflightIssue {
@@ -213,6 +219,24 @@ export interface Job {
   lease_expires_at: string | null;
   created_at: string;
   updated_at: string;
+  checkpoint: Record<string, unknown>;
+}
+
+export interface VerificationCheck {
+  name: string;
+  layer: string;
+  required: boolean;
+  exit_code: number;
+  blocked: boolean;
+  block_reason: string | null;
+  stdout_tail: string;
+  stderr_tail: string;
+}
+
+export interface VerificationDetail {
+  result: string;
+  summary: string;
+  checks: VerificationCheck[];
 }
 
 export interface JobEvent {
@@ -240,6 +264,15 @@ export interface DiffResponse {
   files: DiffFile[];
   review_status: string;
   findings: Array<Record<string, unknown>>;
+  verification: VerificationDetail | null;
+  promoted_files: string[];
+}
+
+export interface ApplyDiffResponse {
+  job_id: string;
+  promoted_files: string[];
+  source_path: string;
+  job: Job;
 }
 
 export interface Policy {
@@ -257,4 +290,66 @@ export interface Policy {
 export interface PolicyListResponse {
   items: Policy[];
   total: number;
+}
+
+export interface AssistantSession {
+  id: string;
+  title: string;
+  provider_id: string | null;
+  model_id: string | null;
+  created_at: string | null;
+}
+
+export interface AssistantTurn {
+  id: string;
+  session_id: string;
+  command: string;
+  mode: string;
+  state: string;
+  provider_id: string | null;
+  model_id: string | null;
+  response: string | null;
+  tool_calls: Array<Record<string, unknown>>;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface AssistantApproval {
+  id: string;
+  turn_id: string;
+  tool_name: string;
+  capability: string;
+  args_preview: string;
+  created_at: string | null;
+}
+
+export interface AssistantMemory {
+  id: string;
+  content: string;
+  confidence: string;
+  created_at: string | null;
+}
+
+export interface AssistantAutomation {
+  id: string;
+  name: string;
+  command: string;
+  schedule_kind: string;
+  interval_seconds: number | null;
+  next_run_at: string | null;
+  enabled: boolean;
+  last_run_at: string | null;
+}
+
+export interface AssistantToolSpec {
+  name: string;
+  capability: string;
+  description: string;
+  requires_approval: boolean;
+}
+
+export interface AssistantStatus {
+  paused: boolean;
+  tools: AssistantToolSpec[];
+  connectors: Record<string, { provider: string; local: boolean }>;
 }

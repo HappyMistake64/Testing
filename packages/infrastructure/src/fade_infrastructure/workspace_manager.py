@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import secrets
 import shutil
 from datetime import UTC, datetime, timedelta
@@ -27,7 +28,9 @@ class WorkspaceManager:
     """Creates and manages isolated workspaces."""
 
     def __init__(self, workspaces_root: Path, *, lease_ttl_seconds: int = 3600) -> None:
-        self._root = workspaces_root
+        # Resolve to an absolute path: workspace paths are passed to git commands
+        # running with a different cwd (e.g. `git worktree add` in the source repo).
+        self._root = workspaces_root.resolve()
         self._root.mkdir(parents=True, exist_ok=True)
         self._lease_ttl_seconds = lease_ttl_seconds
 
@@ -118,10 +121,17 @@ class WorkspaceManager:
         branch: str | None,
     ) -> tuple[WorkspaceStrategy, Path, str | None]:
         worktree_path = dest / "repo"
-        worktree_branch = branch or f"fade-ws-{secrets.token_hex(4)}"
+        # Always use a unique worktree branch: reusing the source's checked-out
+        # branch (e.g. "main") makes `git worktree add` fail.
+        worktree_branch = f"fade-ws-{secrets.token_hex(4)}"
         try:
-            result = git_worktree_add(source_path, worktree_path, worktree_branch)
-            if result.base_revision is None and result.stderr:
+            result = git_worktree_add(
+                source_path,
+                worktree_path,
+                worktree_branch,
+                start_point=branch,
+            )
+            if result.base_revision is None:
                 raise WorkspaceManagerError("WORKTREE_FAILED", result.stderr)
             return WorkspaceStrategy.GIT_WORKTREE, worktree_path, result.base_revision
         except (WorkspaceManagerError, OSError):
@@ -139,7 +149,27 @@ class WorkspaceManager:
             ignore=shutil.ignore_patterns(".git"),
             dirs_exist_ok=True,
         )
+        self._init_git_snapshot(dest)
         return dest
+
+    def _init_git_snapshot(self, path: Path) -> None:
+        """Initialize an isolated git repo so workspace diffs do not leak to parents."""
+        from fade_tool_gateway.runner import run_command
+
+        env = {
+            **os.environ,
+            "GIT_AUTHOR_NAME": "FADE",
+            "GIT_AUTHOR_EMAIL": "fade@workspace.local",
+            "GIT_COMMITTER_NAME": "FADE",
+            "GIT_COMMITTER_EMAIL": "fade@workspace.local",
+        }
+        run_command(["git", "init", "-b", "main"], cwd=str(path), env=env)
+        run_command(["git", "add", "."], cwd=str(path), env=env)
+        run_command(
+            ["git", "commit", "-m", "FADE workspace snapshot"],
+            cwd=str(path),
+            env=env,
+        )
 
     def _create_lease(self, job_id: JobId) -> WorkspaceLease:
         return WorkspaceLease(

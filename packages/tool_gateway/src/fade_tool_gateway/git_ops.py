@@ -26,24 +26,28 @@ def git_worktree_add(
     repo_path: Path,
     worktree_path: Path,
     branch: str,
+    *,
+    start_point: str | None = None,
 ) -> GitWorktreeResult:
-    result = run_command(
-        [
-            "git",
-            "-C",
-            str(repo_path),
-            "worktree",
-            "add",
-            "-B",
-            branch,
-            str(worktree_path),
-        ],
-        cwd=str(repo_path),
-    )
+    argv = [
+        "git",
+        "-C",
+        str(repo_path),
+        "worktree",
+        "add",
+        "-B",
+        branch,
+        str(worktree_path),
+    ]
+    if start_point:
+        argv.append(start_point)
+    result = run_command(argv, cwd=str(repo_path))
+    # A failed add must not report the source revision as a valid base;
+    # callers rely on base_revision=None to detect the failure.
     revision = git_rev_parse(worktree_path) if result.exit_code == 0 else None
     return GitWorktreeResult(
         worktree_path=worktree_path,
-        base_revision=revision or git_rev_parse(repo_path),
+        base_revision=revision,
         stderr=result.stderr,
     )
 

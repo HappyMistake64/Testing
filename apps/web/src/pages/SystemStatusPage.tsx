@@ -128,6 +128,23 @@ export function SystemStatusPage() {
       {!isLoading && !hasError && doctorQuery.data && (
         <DoctorCard data={doctorQuery.data} />
       )}
+
+      {!isLoading && !hasError && doctorQuery.data?.model_providers?.length ? (
+        <div className="card">
+          <h2>Model Providers</h2>
+          <ul className="capability-list">
+            {doctorQuery.data.model_providers.map((provider) => (
+              <li key={`${provider.provider_id}-${provider.model_id}`}>
+                <span
+                  className={`dot ${provider.available ? "dot--available" : "dot--planned"}`}
+                />
+                {provider.provider_id} / {provider.model_id}
+                {!provider.available && provider.reason ? ` — ${provider.reason}` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </>
   );
 }
